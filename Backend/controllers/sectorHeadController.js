@@ -148,7 +148,7 @@ export const forgotPasswordSectorHead = async (req, res) => {
       }
     });
 
-    const resetLink = `http://localhost:3000/sector-head/reset-password/${token}`; // adjust frontend link
+    const resetLink = `http://localhost:5173/sector-head/reset-password/${token}`; // adjust frontend link
 
     const message = `
 <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: auto; background: #000; color: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">

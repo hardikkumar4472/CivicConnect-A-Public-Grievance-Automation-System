@@ -53,6 +53,9 @@ import SectorHeadHome from "./pages/SectorHead/Sector-Home";
 import BroadcastPage from "./pages/SectorHead/BroadcastPage";
 // import CitizenDashboard from "./pages/CitizenDashboard/CitizenDashboard";
 import CitizenDashboard from "./pages/CitizenDashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import SectorHeadResetPassword from "./pages/SectorHeadResetPassword";
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" />;
@@ -71,6 +74,9 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/sector-head/reset-password/:token" element={<SectorHeadResetPassword />} />
           <Route
             path="/admin-dashboard"
             element={

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Home() {
   const [selectedRole, setSelectedRole] = useState("citizen");
@@ -321,7 +323,7 @@ function Home() {
         {/* Footer */}
         <footer style={styles.footer}>
           <div style={styles.loginFooter}>
-            <a href="#" style={styles.forgotPassword}>Forgot Password?</a>
+            <Link to="/forgot-password" style={styles.forgotPassword}>Forgot Password?</Link>
             <div style={styles.secureLogin}>
               <i className="fas fa-shield-alt" style={styles.shieldIcon}></i> Secure Municipal Portal
             </div>
@@ -329,6 +331,8 @@ function Home() {
           <p style={styles.footerText}>© {new Date().getFullYear()} CivicConnect Municipal Services</p>
         </footer>
       </div>
+
+      <ToastContainer position="top-center" autoClose={5000} />
 
       {/* Inline styles */}
       <style>{`

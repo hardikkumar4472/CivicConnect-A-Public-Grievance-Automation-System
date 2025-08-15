@@ -187,7 +187,7 @@ export const forgotPasswordCitizen = async (req, res) => {
       }
     });
 
-    const resetLink = `http://localhost:3000/api/citizen/reset-password/${token}`;
+    const resetLink = `http://localhost:5173/reset-password/${token}`; 
     const htmlTemplate = `
 <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: auto; background: #000; color: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
   <!-- Header with image -->
