@@ -30,7 +30,17 @@ ChartJS.register(
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [adminName, setAdminName] = useState("");
-  const [dashboardData, setDashboardData] = useState({});
+  const [dashboardData, setDashboardData] = useState({
+    totalIssues: 0,
+    pendingIssues: 0,
+    inProgressIssues: 0,
+    resolvedIssues: 0,
+    escalatedIssues: 0,
+    closedIssues: 0,
+    totalCitizens: 0,
+    totalFeedbacks: 0,
+    issues: []
+  });
   const [broadcastSubject, setBroadcastSubject] = useState("");
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,7 +49,7 @@ export default function AdminDashboard() {
     email: "",
     sector: ""
   });
-  const [setSectors] = useState([]);
+  const [sectors, setSectors] = useState([]);
   const [sectorRatings, setSectorRatings] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
@@ -88,7 +98,6 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAdminName(res.data.name);
-      console.log(res.data.name);
     } catch (err) {
       console.error(err);
     }
@@ -107,12 +116,12 @@ export default function AdminDashboard() {
 
   const fetchSectors = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/sectors", {
+      const res = await axios.get("http://localhost:5000/api/issues/sectors", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSectors(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching sectors:", err);
     }
   };
 
@@ -214,7 +223,7 @@ export default function AdminDashboard() {
             width: '50px',
             height: '50px',
             border: '5px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '50%',
+            borderRadius: '30px',
             borderTopColor: '#64ffda',
             animation: 'spin 1s ease-in-out infinite',
             margin: '0 auto 20px',
@@ -331,7 +340,7 @@ export default function AdminDashboard() {
             gap: '10px',
             transition: 'all 0.3s ease',
             margin: '5px 0',
-            borderRadius: '0',
+            borderRadius: '30',
             textAlign: 'left',
             ...(activeTab === "dashboard" && { 
               backgroundColor: 'rgba(100, 255, 218, 0.1)',
@@ -360,7 +369,7 @@ export default function AdminDashboard() {
             gap: '10px',
             transition: 'all 0.3s ease',
             margin: '5px 0',
-            borderRadius: '0',
+            borderRadius: '30',
             textAlign: 'left',
             ...(activeTab === "broadcast" && { 
               backgroundColor: 'rgba(100, 255, 218, 0.1)',
@@ -389,7 +398,7 @@ export default function AdminDashboard() {
             gap: '10px',
             transition: 'all 0.3s ease',
             margin: '5px 0',
-            borderRadius: '0',
+            borderRadius: '30',
             textAlign: 'left',
             ...(activeTab === "export" && { 
               backgroundColor: 'rgba(100, 255, 218, 0.1)',
@@ -418,7 +427,7 @@ export default function AdminDashboard() {
             gap: '10px',
             transition: 'all 0.3s ease',
             margin: '5px 0',
-            borderRadius: '0',
+            borderRadius: '30',
             textAlign: 'left',
             ...(activeTab === "createSectorHead" && { 
               backgroundColor: 'rgba(100, 255, 218, 0.1)',
@@ -447,7 +456,7 @@ export default function AdminDashboard() {
             gap: '10px',
             transition: 'all 0.3s ease',
             margin: '5px 0',
-            borderRadius: '0',
+            borderRadius: '30',
             textAlign: 'left',
             ...(activeTab === "ratings" && { 
               backgroundColor: 'rgba(100, 255, 218, 0.1)',
@@ -469,7 +478,7 @@ export default function AdminDashboard() {
         flexDirection: 'column',
         backgroundColor: '#0a192f',
         overflow: 'hidden',
-        marginLeft: isMobile ? '0' : '-1px', // Changed from 250px to -1px to overlap
+        marginLeft: isMobile ? '0' : '-1px',
         paddingTop: isMobile ? '60px' : '0',
       }}>
         <div style={{
@@ -499,7 +508,7 @@ export default function AdminDashboard() {
           <button onClick={logout} style={{
             padding: '8px 15px',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '30px',
             fontSize: '0.85rem',
             cursor: 'pointer',
             display: 'flex',
@@ -542,9 +551,18 @@ export default function AdminDashboard() {
               gap: '15px',
               padding: '10px 0',
             }}>
-              {Object.entries(dashboardData).map(([key, value]) => (
+              {Object.entries({
+                totalIssues: dashboardData.totalIssues,
+                pendingIssues: dashboardData.pendingIssues,
+                inProgressIssues: dashboardData.inProgressIssues,
+                resolvedIssues: dashboardData.resolvedIssues,
+                escalatedIssues: dashboardData.escalatedIssues,
+                closedIssues: dashboardData.closedIssues,
+                totalCitizens: dashboardData.totalCitizens,
+                totalFeedbacks: dashboardData.totalFeedbacks
+              }).map(([key, value]) => (
                 <div key={key} style={{
-                  borderRadius: '6px',
+                  borderRadius: '30px',
                   padding: '15px',
                   backgroundColor: '#112240',
                   boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
@@ -581,18 +599,26 @@ export default function AdminDashboard() {
                 borderRadius: '6px',
                 border: '1px solid rgba(255,255,255,0.1)'
               }}>
-                <h3 style={{ color: '#ccd6f6', marginBottom: '10px', fontSize: '1rem' }}>Issues Distribution</h3>
+                <h3 style={{ color: '#ccd6f6', marginBottom: '10px', fontSize: '1rem' }}>Issues Status Distribution</h3>
                 <Pie
                   data={{
-                    labels: ['Open', 'Closed', 'Pending'],
+                    labels: ['Pending', 'In Progress', 'Resolved', 'Escalated', 'Closed'],
                     datasets: [
                       {
                         data: [
-                          dashboardData.openIssues || 0,
-                          dashboardData.closedIssues || 0,
-                          dashboardData.pendingIssues || 0
+                          dashboardData.pendingIssues || 0,
+                          dashboardData.inProgressIssues || 0,
+                          dashboardData.resolvedIssues || 0,
+                          dashboardData.escalatedIssues || 0,
+                          dashboardData.closedIssues || 0
                         ],
-                        backgroundColor: ['#64ffda', '#ff6b6b', '#feca57']
+                        backgroundColor: [
+                          '#feca57', // Pending - yellow
+                          '#2e86de', // In Progress - blue
+                          '#1dd1a1', // Resolved - teal
+                          '#ff6b6b', // Escalated - red
+                          '#576574'  // Closed - gray
+                        ]
                       }
                     ]
                   }}
@@ -628,36 +654,71 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Line Chart */}
+              {/* Recent Issues Table */}
               <div style={{ 
                 backgroundColor: '#112240', 
                 padding: '15px', 
-                borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.1)'
+                borderRadius: '30px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                gridColumn: '1 / -1'
               }}>
-                <h3 style={{ color: '#ccd6f6', marginBottom: '10px', fontSize: '1rem' }}>Issues Over Time</h3>
-                <Line
-                  data={{
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [
-                      {
-                        label: 'Total Issues',
-                        data: [
-                          dashboardData.totalIssues || 0,
-                          dashboardData.totalIssues || 0,
-                          dashboardData.totalIssues || 0,
-                          dashboardData.totalIssues || 0,
-                          dashboardData.totalIssues || 0,
-                          dashboardData.totalIssues || 0
-                        ],
-                        borderColor: '#64ffda',
-                        backgroundColor: 'rgba(100, 255, 218, 0.2)',
-                        fill: true,
-                        tension: 0.3
-                      }
-                    ]
-                  }}
-                />
+                <h3 style={{ color: '#ccd6f6', marginBottom: '15px', fontSize: '1rem' }}>
+                  Recent Issues
+                </h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse',
+                    color: '#e6f1ff'
+                  }}>
+                    <thead>
+                      <tr style={{ 
+                        backgroundColor: 'rgba(100, 255, 218, 0.1)',
+                        borderBottom: '1px solid rgba(255,255,255,0.1)'
+                      }}>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Citizen</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Sector</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Category</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Status</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboardData.issues && dashboardData.issues.slice(0, 5).map((issue) => (
+                        <tr key={issue._id} style={{ 
+                          borderBottom: '1px solid rgba(255,255,255,0.05)',
+                          '&:hover': { backgroundColor: 'rgba(100, 255, 218, 0.05)' }
+                        }}>
+                          <td style={{ padding: '10px' }}>{issue._id.substring(18)}</td>
+                          <td style={{ padding: '10px' }}>
+                            {issue.citizen?.name || 'N/A'}
+                          </td>
+                          <td style={{ padding: '10px' }}>{issue.sector}</td>
+                          <td style={{ padding: '10px' }}>{issue.category}</td>
+                          <td style={{ padding: '10px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '30px',
+                              fontSize: '0.8rem',
+                              fontWeight: '500',
+                              ...(issue.status === 'Pending' && { backgroundColor: 'rgba(254, 202, 87, 0.1)', color: '#feca57' }),
+                              ...(issue.status === 'In Progress' && { backgroundColor: 'rgba(46, 134, 222, 0.1)', color: '#2e86de' }),
+                              ...(issue.status === 'Resolved' && { backgroundColor: 'rgba(29, 209, 161, 0.1)', color: '#1dd1a1' }),
+                              ...(issue.status === 'Escalated' && { backgroundColor: 'rgba(255, 107, 107, 0.1)', color: '#ff6b6b' }),
+                              ...(issue.status === 'Closed' && { backgroundColor: 'rgba(87, 101, 116, 0.1)', color: '#576574' }),
+                            }}>
+                              {issue.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px' }}>
+                            {new Date(issue.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -691,7 +752,7 @@ export default function AdminDashboard() {
                 width: '100%',
                 padding: '12px 15px',
                 marginBottom: '15px',
-                borderRadius: '6px',
+                borderRadius: '30px',
                 fontSize: '0.95rem',
                 backgroundColor: '#112240',
                 border: '1px solid #1e2a47',
@@ -707,7 +768,7 @@ export default function AdminDashboard() {
                 width: '100%',
                 height: '150px',
                 padding: '15px',
-                borderRadius: '6px',
+                borderRadius: '30px',
                 fontSize: '0.95rem',
                 marginBottom: '20px',
                 resize: 'none',
@@ -720,7 +781,7 @@ export default function AdminDashboard() {
             <button onClick={sendBroadcast} style={{
               padding: '12px 20px',
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: '30px',
               fontSize: '0.95rem',
               fontWeight: '500',
               cursor: 'pointer',
@@ -769,7 +830,7 @@ export default function AdminDashboard() {
               style={{
                 padding: '12px 20px',
                 border: 'none',
-                borderRadius: '6px',
+                borderRadius: '30px',
                 fontSize: '0.95rem',
                 fontWeight: '500',
                 cursor: 'pointer',
@@ -787,144 +848,144 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "createSectorHead" && (
-          <div style={{
-            flex: 1,
-            padding: '20px',
-            backgroundColor: '#0a192f',
-            overflowY: 'auto',
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              color: '#ccd6f6'
-            }}>
-              <i className="fas fa-user-plus" style={{
-                color: '#64ffda',
-                fontSize: '1.2rem',
-              }}></i> Create Sector Head
-            </h2>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-                fontSize: '0.9rem',
-                color: '#8892b0'
-              }}>
-                <i className="fas fa-user" style={{
-                  color: '#64ffda',
-                  fontSize: '0.9rem',
-                }}></i> Full Name
-              </label>
-              <input 
-                type="text" 
-                name="name"
-                value={sectorHeadData.name}
-                onChange={handleSectorHeadChange}
-                placeholder="Enter full name"
-                style={{
-                  width: '100%',
-                  padding: '12px 15px',
-                  borderRadius: '6px',
-                  fontSize: '0.95rem',
-                  backgroundColor: '#112240',
-                  border: '1px solid #1e2a47',
-                  color: '#e6f1ff',
-                  transition: 'border 0.3s ease',
-                }}
-              />
-            </div>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-                fontSize: '0.9rem',
-                color: '#8892b0'
-              }}>
-                <i className="fas fa-envelope" style={{
-                  color: '#64ffda',
-                  fontSize: '0.9rem',
-                }}></i> Email
-              </label>
-              <input 
-                type="email" 
-                name="email"
-                value={sectorHeadData.email}
-                onChange={handleSectorHeadChange}
-                placeholder="Enter email address"
-                style={{
-                  width: '100%',
-                  padding: '12px 15px',
-                  borderRadius: '6px',
-                  fontSize: '0.95rem',
-                  backgroundColor: '#112240',
-                  border: '1px solid #1e2a47',
-                  color: '#e6f1ff',
-                  transition: 'border 0.3s ease',
-                }}
-              />
-            </div>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-                fontSize: '0.9rem',
-                color: '#8892b0'
-              }}>
-                <i className="fas fa-map-marker-alt" style={{
-                  color: '#64ffda',
-                  fontSize: '0.9rem',
-                }}></i> Sector Name
-              </label>
-              <input 
-                type="text" 
-                name="sector"
-                value={sectorHeadData.sector}
-                onChange={handleSectorHeadChange}
-                placeholder="Enter sector name"
-                style={{
-                  width: '100%',
-                  padding: '12px 15px',
-                  borderRadius: '6px',
-                  fontSize: '0.95rem',
-                  backgroundColor: '#112240',
-                  border: '1px solid #1e2a47',
-                  color: '#e6f1ff',
-                  transition: 'border 0.3s ease',
-                }}
-              />
-            </div>
-            
-            <button onClick={createSectorHead} style={{
-              padding: '12px 20px',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '0.95rem',
-              fontWeight: '500',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.3s ease',
-              backgroundColor: '#64ffda',
-              color: '#0a192f'
-            }}>
-              <i className="fas fa-user-plus" style={{ fontSize: '0.9rem' }}></i> Create Sector Head
-            </button>
-          </div>
-        )}
+  <div style={{
+    flex: 1,
+    padding: '20px',
+    backgroundColor: '#0a192f',
+    overflowY: 'auto',
+  }}>
+    <h2 style={{
+      fontSize: '1.5rem',
+      fontWeight: '600',
+      marginBottom: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      color: '#ccd6f6'
+    }}>
+      <i className="fas fa-user-plus" style={{
+        color: '#64ffda',
+        fontSize: '1.2rem',
+      }}></i> Create Sector Head
+    </h2>
+    
+    <div style={{ marginBottom: '15px' }}>
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '8px',
+        fontSize: '0.9rem',
+        color: '#8892b0'
+      }}>
+        <i className="fas fa-user" style={{
+          color: '#64ffda',
+          fontSize: '0.9rem',
+        }}></i> Full Name
+      </label>
+      <input 
+        type="text" 
+        name="name"
+        value={sectorHeadData.name}
+        onChange={handleSectorHeadChange}
+        placeholder="Enter full name"
+        style={{
+          width: '100%',
+          padding: '12px 15px',
+          borderRadius: '30px',
+          fontSize: '0.95rem',
+          backgroundColor: '#112240',
+          border: '1px solid #1e2a47',
+          color: '#e6f1ff',
+          transition: 'border 0.3s ease',
+        }}
+      />
+    </div>
+    
+    <div style={{ marginBottom: '15px' }}>
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '8px',
+        fontSize: '0.9rem',
+        color: '#8892b0'
+      }}>
+        <i className="fas fa-envelope" style={{
+          color: '#64ffda',
+          fontSize: '0.9rem',
+        }}></i> Email
+      </label>
+      <input 
+        type="email" 
+        name="email"
+        value={sectorHeadData.email}
+        onChange={handleSectorHeadChange}
+        placeholder="Enter email address"
+        style={{
+          width: '100%',
+          padding: '12px 15px',
+          borderRadius: '30px',
+          fontSize: '0.95rem',
+          backgroundColor: '#112240',
+          border: '1px solid #1e2a47',
+          color: '#e6f1ff',
+          transition: 'border 0.3s ease',
+        }}
+      />
+    </div>
+    
+    <div style={{ marginBottom: '15px' }}>
+      <label style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '8px',
+        fontSize: '0.9rem',
+        color: '#8892b0'
+      }}>
+        <i className="fas fa-map-marker-alt" style={{
+          color: '#64ffda',
+          fontSize: '0.9rem',
+        }}></i> Sector Name
+      </label>
+      <input
+        type="text"
+        name="sector"
+        value={sectorHeadData.sector}
+        onChange={handleSectorHeadChange}
+        placeholder="Enter sector name"
+        style={{
+          width: '100%',
+          padding: '12px 15px',
+          borderRadius: '30px',
+          fontSize: '0.95rem',
+          backgroundColor: '#112240',
+          border: '1px solid #1e2a47',
+          color: '#e6f1ff',
+          transition: 'border 0.3s ease',
+        }}
+      />
+    </div>
+    
+    <button onClick={createSectorHead} style={{
+      padding: '12px 20px',
+      border: 'none',
+      borderRadius: '30px',
+      fontSize: '0.95rem',
+      fontWeight: '500',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      transition: 'all 0.3s ease',
+      backgroundColor: '#64ffda',
+      color: '#0a192f'
+    }}>
+      <i className="fas fa-user-plus" style={{ fontSize: '0.9rem' }}></i> Create Sector Head
+    </button>
+  </div>
+)}
 
         {activeTab === "ratings" && (
           <div style={{ 

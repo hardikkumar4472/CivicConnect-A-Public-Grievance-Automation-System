@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import generateToken from '../utils/generateToken.js';
 import Issue from '../models/issue.js';
 import Citizen from '../models/Citizen.js';
+import Feedback from '../models/Feedback.js';
 export const registerSectorHead = async (req, res) => {
   try {
     const { name, sector, email } = req.body;
@@ -60,7 +61,7 @@ export const registerSectorHead = async (req, res) => {
     </p>
     
     <div style="text-align: center; margin-top: 30px;">
-      <a href="#" style="background: #ff6b35; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Access Dashboard</a>
+      <a href="http://localhost:5173/" style="background: #ff6b35; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Access Dashboard</a>
     </div>
   </div>
 
@@ -338,36 +339,48 @@ export const getSectorHeadDetails = async (req, res) => {
 };
 
 export const getSectorDashboardSummary = async (req, res) => {
-  
   try {
     const sectorHead = await SectorHead.findById(req.user.id);
-          console.log(req.user.id);
     if (!sectorHead) {
       return res.status(404).json({ message: 'Sector Head not found' });
     }
 
     const sector = sectorHead.sector;
 
+    // Count issues by status
     const [
       totalIssues,
-      openIssues,
-      closedIssues,
       pendingIssues,
-      totalCitizens
+      inProgressIssues,
+      resolvedIssues,
+      escalatedIssues,
+      closedIssues,
+      totalCitizens,
+      issuesByCategory
     ] = await Promise.all([
       Issue.countDocuments({ sector }),
-      Issue.countDocuments({ sector, status: 'open' }),
-      Issue.countDocuments({ sector, status: 'closed_by_sector_head' }),
-      Issue.countDocuments({ sector, status: 'pending' }),
-      Citizen.countDocuments({ sector })
+      Issue.countDocuments({ sector, status: 'Pending' }),
+      Issue.countDocuments({ sector, status: 'In Progress' }),
+      Issue.countDocuments({ sector, status: 'Resolved' }),
+      Issue.countDocuments({ sector, status: 'Escalated' }),
+      Issue.countDocuments({ sector, status: 'Closed' }),
+      Citizen.countDocuments({ sector }),
+      Issue.aggregate([
+        { $match: { sector } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+        { $project: { category: '$_id', count: 1, _id: 0 } }
+      ])
     ]);
 
     res.status(200).json({
       totalIssues,
-      openIssues,
-      closedIssues,
       pendingIssues,
-      totalCitizens
+      inProgressIssues,
+      resolvedIssues,
+      escalatedIssues,
+      closedIssues,
+      totalCitizens,
+      issuesByCategory
     });
   } catch (error) {
     console.error('Error fetching sector dashboard summary:', error);
@@ -604,7 +617,7 @@ export const getCitizensWithIssuesBySector = async (req, res) => {
           issues: issues || [],
           totalIssues: issues.length,
           openIssues: issues.filter(i => i.status === 'open').length,
-          resolvedIssues: issues.filter(i => i.status === 'closed_by_sector_head').length,
+          resolvedIssues: issues.filter(i => i.status === 'closed').length,
           pendingIssues: issues.filter(i => i.status === 'pending').length
         };
       })
@@ -643,5 +656,62 @@ export const getCitizensWithIssuesBySector = async (req, res) => {
       message: 'Failed to fetch citizens and their issues',
       error: error.message 
     });
+  }
+};
+export const getSectorWiseRatings = async (req, res) => {
+  try {
+    // 1. Get current sector head
+    const sectorHead = await SectorHead.findById(req.user.id);
+    if (!sectorHead) {
+      return res.status(404).json({ message: 'Sector Head not found' });
+    }
+
+    const sector = sectorHead.sector;
+
+    // 2. Aggregation: Join with citizens and filter by sector
+    const ratings = await Feedback.aggregate([
+      {
+        $lookup: {
+          from: "citizens",
+          localField: "citizen",
+          foreignField: "_id",
+          as: "citizenInfo"
+        }
+      },
+      { $unwind: "$citizenInfo" },
+      {
+        $match: {
+          "citizenInfo.sector": sector,
+          rating: { $exists: true }
+        }
+      },
+      {
+        $group: {
+          _id: "$citizenInfo.sector",
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Handle empty or missing data
+    if (ratings.length === 0) {
+      return res.status(200).json({
+        sector,
+        averageRating: "N/A",
+        totalRatings: 0
+      });
+    }
+
+    const result = {
+      sector,
+      averageRating: ratings[0].averageRating.toFixed(2),
+      totalRatings: ratings[0].totalRatings
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching sector-wise ratings:", error);
+    res.status(500).json({ message: "Failed to fetch ratings" });
   }
 };

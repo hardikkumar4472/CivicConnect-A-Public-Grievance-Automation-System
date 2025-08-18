@@ -1,10 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 
-export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenView }) {
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([]);
-  const [addingComment, setAddingComment] = useState(false);
-
+export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenView, feedback }) {
   const statusColors = {
     'pending': '#FFA500',
     'in-progress': '#1E90FF',
@@ -14,33 +10,11 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
   };
 
   const normalizeStatus = (status) => {
-    return status.toLowerCase().replace(/\s+/g, '-');
+    return status ? status.toLowerCase().replace(/\s+/g, '-') : '';
   };
 
   const status = normalizeStatus(selectedIssue.status);
   const statusColor = statusColors[status] || '#CCCCCC';
-
-  const handleAddComment = async () => {
-    if (!comment.trim()) return;
-    
-    setAddingComment(true);
-    try {
-      // In a real app, you would call an API to add the comment
-      const newComment = {
-        id: Date.now(),
-        text: comment,
-        createdAt: new Date().toISOString(),
-        author: "You"
-      };
-      
-      setComments([...comments, newComment]);
-      setComment("");
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    } finally {
-      setAddingComment(false);
-    }
-  };
 
   return (
     <div style={{
@@ -58,14 +32,15 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
       boxSizing: 'border-box'
     }}>
       <div style={{
-        backgroundColor: '#112240',
-        borderRadius: '8px',
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderRadius: '30px',
         padding: '25px',
         width: '100%',
         maxWidth: '800px',
         maxHeight: '90vh',
         overflowY: 'auto',
-        boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+        boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+        backdropFilter: 'blur(30px)'
       }}>
         <div style={{
           display: 'flex',
@@ -86,7 +61,7 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
             <i className="fas fa-exclamation-circle"></i>
             Issue Details
           </h2>
-          <button 
+          <button
             onClick={onClose}
             style={{
               background: 'none',
@@ -133,7 +108,7 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
                 backgroundColor: statusColor,
                 color: '#fff',
                 padding: '4px 10px',
-                borderRadius: '20px',
+                borderRadius: '30px',
                 fontSize: '0.8rem',
                 fontWeight: '600',
                 textTransform: 'capitalize'
@@ -145,7 +120,7 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
                 <button
                   style={{
                     padding: '4px 10px',
-                    borderRadius: '20px',
+                    borderRadius: '30px',
                     border: 'none',
                     background: '#ff6b6b',
                     color: '#fff',
@@ -176,13 +151,13 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
                 <h4 style={{ color: '#ccd6f6', marginBottom: '10px', fontSize: '0.9rem' }}>
                   Attached Image:
                 </h4>
-                <img 
-                  src={selectedIssue.imageUrl} 
-                  alt="Issue" 
+                <img
+                  src={selectedIssue.imageUrl}
+                  alt="Issue"
                   style={{
                     maxWidth: '100%',
                     maxHeight: '150px',
-                    borderRadius: '5px',
+                    borderRadius: '30px',
                     border: '1px solid #233554'
                   }}
                 />
@@ -196,7 +171,7 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
           <div style={{
             backgroundColor: '#0a192f',
             padding: '15px',
-            borderRadius: '5px',
+            borderRadius: '30px',
             color: '#ccd6f6',
             lineHeight: '1.5'
           }}>
@@ -204,75 +179,94 @@ export default function IssueDetailsModal({ selectedIssue, onClose, isCitizenVie
           </div>
         </div>
         
-        <div>
-          <h3 style={{ color: '#ccd6f6', marginBottom: '10px' }}>Comments & Updates</h3>
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ color: '#ccd6f6', marginBottom: '10px' }}>
+            <i className="fas fa-comments" style={{ marginRight: '8px' }}></i>
+            Updates from Sector Head
+          </h3>
           <div style={{
             backgroundColor: '#0a192f',
             padding: '15px',
-            borderRadius: '5px',
-            marginBottom: '15px',
+            borderRadius: '30px',
             maxHeight: '200px',
             overflowY: 'auto'
           }}>
-            {comments.length === 0 ? (
-              <p style={{ color: '#8892b0', textAlign: 'center' }}>No comments yet</p>
-            ) : (
-              comments.map(comment => (
-                <div key={comment.id} style={{
-                  marginBottom: '10px',
-                  paddingBottom: '10px',
-                  borderBottom: '1px solid #233554'
+            {selectedIssue.comments && selectedIssue.comments.length > 0 ? (
+              selectedIssue.comments.map((comment, index) => (
+                <div key={index} style={{
+                  marginBottom: '15px',
+                  paddingBottom: '15px',
+                  borderBottom: index < selectedIssue.comments.length - 1 ? '1px solid #233554' : 'none'
                 }}>
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    marginBottom: '5px'
+                    alignItems: 'center',
+                    marginBottom: '8px'
                   }}>
-                    <strong style={{ color: '#64ffda' }}>{comment.author}</strong>
-                    <span style={{ color: '#8892b0', fontSize: '0.8rem' }}>
-                      {new Date(comment.createdAt).toLocaleString()}
-                    </span>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{
+                        backgroundColor: '#64ffda',
+                        color: '#0a192f',
+                        padding: '4px 8px',
+                        borderRadius: '30px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600'
+                      }}>
+                        Sector Head
+                      </span>
+                      <span style={{ color: '#8892b0', fontSize: '0.8rem' }}>
+                        {new Date(comment.timestamp).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <p style={{ color: '#ccd6f6', margin: 0 }}>{comment.text}</p>
+                  <p style={{ color: '#ccd6f6', margin: 0 }}>
+                    {comment.text}
+                  </p>
                 </div>
               ))
+            ) : (
+              <p style={{ color: '#8892b0', textAlign: 'center' }}>
+                No updates from sector head yet.
+              </p>
             )}
           </div>
-          
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Add a comment..."
-              style={{
-                flex: 1,
-                padding: '10px',
-                borderRadius: '5px',
-                border: '1px solid #233554',
-                backgroundColor: '#0a192f',
-                color: '#ccd6f6',
-                fontSize: '0.9rem'
-              }}
-            />
-            <button
-              onClick={handleAddComment}
-              disabled={addingComment || !comment.trim()}
-              style={{
-                padding: '10px 15px',
-                borderRadius: '5px',
-                border: 'none',
-                background: '#64ffda',
-                color: '#0a192f',
-                cursor: 'pointer',
-                fontWeight: '600',
-                opacity: addingComment || !comment.trim() ? 0.7 : 1
-              }}
-            >
-              {addingComment ? 'Adding...' : 'Add'}
-            </button>
-          </div>
         </div>
+
+        {feedback && (
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ color: '#ccd6f6', marginBottom: '10px' }}>
+              <i className="fas fa-star" style={{ marginRight: '8px', color: '#ffd700' }}></i>
+              Your Feedback
+            </h3>
+            <div style={{
+              backgroundColor: '#0a192f',
+              padding: '15px',
+              borderRadius: '30px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        fontSize: '20px',
+                        color: star <= feedback.rating ? '#ffd700' : '#8892b0'
+                      }}
+                    >
+                      {star <= feedback.rating ? '★' : '☆'}
+                    </span>
+                  ))}
+                </div>
+                <span style={{ color: '#ffd700' }}>({feedback.rating}/5)</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

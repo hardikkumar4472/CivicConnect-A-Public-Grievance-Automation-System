@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
+
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
-const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
+const DashboardSummaryModal = ({ dashboardSummary: initialSummary, onClose }) => {
+  const [summary, setSummary] = useState(initialSummary || {});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/sector-head/dashboard-summary");
+        console.log("Fetched summary from backend:", data);
+        setSummary(data);
+      } catch (err) {
+        console.error("Error fetching summary:", err);
+      }
+    };
+    fetchSummary();
+  }, []);
+
+  useEffect(() => {
+    if (summary) {
+      console.log("Updated summary state:", summary);
+    }
+  }, [summary]);
 
   const handleViewAllIssues = () => {
     onClose();
@@ -19,11 +41,11 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
       {
         label: 'Issues by Status',
         data: [
-          dashboardSummary.pendingIssues,
-          dashboardSummary.inProgressIssues || 0,
-          dashboardSummary.resolvedIssues || 0,
-          dashboardSummary.escalatedIssues || 0,
-          dashboardSummary.closedIssues
+          summary.pendingIssues,
+          summary.inProgressIssues || 0,
+          summary.resolvedIssues || 0,
+          summary.escalatedIssues || 0,
+          summary.closedIssues
         ],
         backgroundColor: [
           'rgba(255, 193, 7, 0.7)',
@@ -45,11 +67,11 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
   };
 
   const categoryData = {
-    labels: dashboardSummary.issuesByCategory?.map(item => item.category) || [],
+    labels: summary.issuesByCategory?.map(item => item.category) || [],
     datasets: [
       {
         label: 'Issues by Category',
-        data: dashboardSummary.issuesByCategory?.map(item => item.count) || [],
+        data: summary.issuesByCategory?.map(item => item.count) || [],
         backgroundColor: 'rgba(100, 255, 218, 0.7)',
         borderColor: 'rgba(100, 255, 218, 1)',
         borderWidth: 1,
@@ -57,9 +79,22 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
     ],
   };
 
-  const resolutionRate = dashboardSummary.totalIssues > 0 
-    ? Math.round((dashboardSummary.closedIssues / dashboardSummary.totalIssues) * 100)
+  const resolutionRate = summary.totalIssues > 0 
+    ? Math.round((summary.resolvedIssues / summary.totalIssues) * 100)
     : 0;
+
+  // Responsive styles
+  const chartsContainerStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '30px',
+    marginBottom: '30px'
+  };
+
+  // Apply media query for larger screens
+  if (window.innerWidth >= 768) {
+    chartsContainerStyle.gridTemplateColumns = '1fr 1fr';
+  }
 
   return (
     <div style={{
@@ -68,15 +103,15 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
+      background: 'rgba(0, 0, 0, 0)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
-      backdropFilter: 'blur(5px)',
+      backdropFilter: 'blur(30px)',
     }} onClick={onClose}>
       <div style={{
-        background: '#112240',
+        background: '#11224000',
         padding: '25px',
         borderRadius: '10px',
         width: '90%',
@@ -96,7 +131,7 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
             border: 'none',
             fontSize: '1.5rem',
             cursor: 'pointer',
-            color: '#8892b0',
+            color: '#7a86a8ff',
             transition: 'color 0.3s ease',
             padding: '5px',
           }}
@@ -114,49 +149,49 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
           <SummaryCard 
             icon="fa-exclamation-circle"
             title="Total Issues"
-            value={dashboardSummary.totalIssues}
+            value={summary.totalIssues}
             color="#64ffda"
           />
           
           <SummaryCard 
             icon="fa-clock"
             title="Pending Issues"
-            value={dashboardSummary.pendingIssues}
+            value={summary.pendingIssues}
             color="#ffc107"
           />
           
           <SummaryCard 
             icon="fa-spinner"
             title="In Progress"
-            value={dashboardSummary.inProgressIssues || 0}
+            value={summary.inProgressIssues || 0}
             color="#2196f3"
           />
           
           <SummaryCard 
             icon="fa-check-circle"
             title="Resolved Issues"
-            value={dashboardSummary.resolvedIssues || 0}
+            value={summary.resolvedIssues || 0}
             color="#4caf50"
           />
           
           <SummaryCard 
             icon="fa-exclamation-triangle"
             title="Escalated Issues"
-            value={dashboardSummary.escalatedIssues || 0}
+            value={summary.escalatedIssues || 0}
             color="#9c27b0"
           />
           
           <SummaryCard 
             icon="fa-check-square"
             title="Closed Issues"
-            value={dashboardSummary.closedIssues}
+            value={summary.closedIssues}
             color="#f44336"
           />
           
           <SummaryCard 
             icon="fa-users"
             title="Total Citizens"
-            value={dashboardSummary.totalCitizens}
+            value={summary.totalCitizens}
             color="#64ffda"
           />
           
@@ -169,18 +204,10 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
         </div>
         
         {/* Charts Section */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr', 
-          gap: '30px',
-          marginBottom: '30px',
-          '@media (min-width: 768px)': {
-            gridTemplateColumns: '1fr 1fr'
-          }
-        }}>
+        <div style={chartsContainerStyle}>
           <div style={{ 
             background: '#1e2a47',
-            borderRadius: '8px',
+            borderRadius: '30px',
             padding: '20px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
           }}>
@@ -218,7 +245,7 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
           
           <div style={{ 
             background: '#1e2a47',
-            borderRadius: '8px',
+            borderRadius: '30px',
             padding: '20px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
           }}>
@@ -269,39 +296,6 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
         </div>
         
         {/* Additional Metrics */}
-        <div style={{ 
-          background: '#1e2a47',
-          borderRadius: '8px',
-          padding: '20px',
-          marginBottom: '20px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h3 style={{ color: '#64ffda', marginTop: 0, marginBottom: '15px' }}>
-            <i className="fas fa-info-circle"></i> Additional Metrics
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-            <MetricItem 
-              label="Avg. Resolution Time"
-              value={dashboardSummary.avgResolutionTime || 'N/A'}
-              icon="fa-clock"
-            />
-            <MetricItem 
-              label="Avg. Feedback Rating"
-              value={dashboardSummary.avgFeedbackRating ? `${dashboardSummary.avgFeedbackRating}/5` : 'N/A'}
-              icon="fa-star"
-            />
-            <MetricItem 
-              label="Most Reported Category"
-              value={dashboardSummary.mostReportedCategory || 'N/A'}
-              icon="fa-tag"
-            />
-            <MetricItem 
-              label="Recent Activity"
-              value={dashboardSummary.lastUpdated ? new Date(dashboardSummary.lastUpdated).toLocaleDateString() : 'N/A'}
-              icon="fa-calendar"
-            />
-          </div>
-        </div>
         
         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px' }}>
           <button 
@@ -311,52 +305,57 @@ const DashboardSummaryModal = ({ dashboardSummary, onClose }) => {
               backgroundColor: '#1e2a47',
               color: '#64ffda',
               border: 'none',
-              borderRadius: '5px',
+              borderRadius: '30px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               transition: 'all 0.3s ease',
-              ':hover': {
-                backgroundColor: '#64ffda',
-                color: '#0a192f'
-              }
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#64ffda';
+              e.currentTarget.style.color = '#0a192f';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#1e2a47';
+              e.currentTarget.style.color = '#64ffda';
             }}
           >
             <i className="fas fa-list"></i> View All Issues
           </button>
         </div>
-        
-        <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #1e2a47', textAlign: 'center' }}>
-          <p style={{ color: '#8892b0', fontSize: '0.9rem', margin: 0 }}>
-            Last updated: {dashboardSummary.lastUpdated ? new Date(dashboardSummary.lastUpdated).toLocaleString() : 'N/A'}
-          </p>
-        </div>
+      
       </div>
     </div>
   );
 };
 
-const SummaryCard = ({ icon, title, value, color }) => (
-  <div style={{ 
-    background: '#1e2a47', 
-    borderRadius: '8px', 
-    padding: '20px', 
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.3s ease',
-    ':hover': {
-      transform: 'translateY(-5px)'
-    }
-  }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-      <i className={`fas ${icon}`} style={{ color, fontSize: '1.2rem' }}></i>
-      <h3 style={{ margin: 0, fontSize: '1rem', color: '#8892b0' }}>{title}</h3>
+const SummaryCard = ({ icon, title, value, color }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  return (
+    <div 
+      style={{ 
+        background: '#1e2a47', 
+        borderRadius: '30px', 
+        padding: '20px', 
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        transition: 'transform 0.3s ease',
+        transform: isHovered ? 'translateY(-5px)' : 'none'
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+        <i className={`fas ${icon}`} style={{ color, fontSize: '1.2rem' }}></i>
+        <h3 style={{ margin: 0, fontSize: '1rem', color: '#8892b0' }}>{title}</h3>
+      </div>
+      <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#e6f1ff', textAlign: 'center' }}>
+        {value}
+      </div>
     </div>
-    <div style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#e6f1ff', textAlign: 'center' }}>
-      {value}
-    </div>
-  </div>
-);
+  );
+};
 
 const MetricItem = ({ label, value, icon }) => (
   <div style={{ 
@@ -365,7 +364,7 @@ const MetricItem = ({ label, value, icon }) => (
     gap: '10px',
     padding: '10px',
     background: 'rgba(100, 255, 218, 0.1)',
-    borderRadius: '5px'
+    borderRadius: '30px'
   }}>
     <i className={`fas ${icon}`} style={{ color: '#64ffda', fontSize: '1rem' }}></i>
     <div>

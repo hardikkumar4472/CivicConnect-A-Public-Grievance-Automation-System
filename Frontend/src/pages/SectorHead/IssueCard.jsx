@@ -34,7 +34,7 @@ const IssueCard = ({ issue, isSelected, onClick }) => {
     <div
       style={{
         background: '#1e2a47',
-        borderRadius: '8px',
+        borderRadius: '30px',
         overflow: 'hidden',
         boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
         cursor: 'pointer',
@@ -80,8 +80,8 @@ const IssueCard = ({ issue, isSelected, onClick }) => {
         </div>
       </div>
       <div style={{ padding: '15px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ margin: '0 0 10px', color: '#e6f1ff', fontSize: '1.1rem' }}>{issue.title}</h3>
-        <p style={{ color: '#8892b0', fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.5', flexGrow: 1 }}>
+        <h3 style={{ margin: '0 0 10px', color: '#ffffffff', fontSize: '1.1rem' }}>{issue.title}</h3>
+        <p style={{ color: '#eaff00ff', fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.5', flexGrow: 1 }}>
           {issue.description.length > 100 
             ? `${issue.description.substring(0, 100)}...` 
             : issue.description}

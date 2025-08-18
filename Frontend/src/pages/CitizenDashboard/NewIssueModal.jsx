@@ -1,13 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom marker icon for better visibility
+const customIcon = new L.Icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Component to handle map clicks
+function LocationMarker({ position, setPosition }) {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+
+  return position ? <Marker position={position} icon={customIcon} /> : null;
+}
 
 export default function NewIssueModal({ onSubmit, onClose }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     category: 'Water',
     description: '',
     imageUrl: '',
-    latitude: '',
-    longitude: '',
+    latitude: '28.7041',
+    longitude: '77.1025',
     address: '',
     sector: '', // Will be populated from API
     houseId: '' // Will be populated from API
@@ -15,31 +48,78 @@ export default function NewIssueModal({ onSubmit, onClose }) {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [fetchingData, setFetchingData] = useState(true);
+  const [mapPosition, setMapPosition] = useState([28.7041, 77.1025]); // Default to Delhi, India
+  const [locationName, setLocationName] = useState('Delhi, India');
 
   useEffect(() => {
     const fetchCitizenData = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('Fetching citizen data with token:', token ? 'Present' : 'Missing');
+        
         const response = await axios.get('http://localhost:5000/api/citizen/me', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
         
+        console.log('Citizen data response:', response.data);
+        
         setFormData(prev => ({
           ...prev,
           sector: response.data.data.sector,
           houseId: response.data.data.houseId
         }));
+        
+        console.log('Updated form data with citizen info');
       } catch (error) {
         console.error('Error fetching citizen data:', error);
+        if (error.response?.status === 401) {
+          alert('Session expired. Please login again.');
+          onClose();
+        }
       } finally {
         setFetchingData(false);
       }
     };
 
     fetchCitizenData();
+  }, [onClose]);
+
+  // Update form data when map position changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: mapPosition[0].toFixed(6),
+      longitude: mapPosition[1].toFixed(6)
+    }));
+    
+    // Get location name from coordinates
+    fetchLocationName(mapPosition[0], mapPosition[1]);
+  }, [mapPosition]);
+
+  // Initialize coordinates when component mounts
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: mapPosition[0].toFixed(6),
+      longitude: mapPosition[1].toFixed(6)
+    }));
   }, []);
+
+  const fetchLocationName = async (lat, lng) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      const data = await response.json();
+      if (data.display_name) {
+        setLocationName(data.display_name.split(', ').slice(0, 3).join(', '));
+      }
+    } catch (error) {
+      console.error('Error fetching location name:', error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,9 +140,64 @@ export default function NewIssueModal({ onSubmit, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log('Form submission started');
+    console.log('Current form data:', formData);
+    
+    // Validate required fields
+    if (!formData.description.trim()) {
+      alert('Please enter a description for the issue');
+      return;
+    }
+    
+    if (!formData.latitude || !formData.longitude) {
+      alert('Please select a location on the map');
+      return;
+    }
+    
+    // Ensure coordinates are numbers
+    const lat = parseFloat(formData.latitude);
+    const lng = parseFloat(formData.longitude);
+    
+    if (isNaN(lat) || isNaN(lng)) {
+      alert('Invalid coordinates. Please select a location on the map again.');
+      return;
+    }
+    
+    // Validate sector and houseId are present
+    if (!formData.sector || !formData.houseId) {
+      alert('Missing sector or house ID information. Please refresh the page and try again.');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await onSubmit(formData);
+      // Create a clean form data object with proper coordinates
+      const cleanFormData = {
+        category: formData.category,
+        description: formData.description.trim(),
+        imageUrl: formData.imageUrl,
+        latitude: lat.toFixed(6),
+        longitude: lng.toFixed(6),
+        address: formData.address.trim(),
+        sector: formData.sector,
+        houseId: formData.houseId
+      };
+      
+      console.log('Submitting issue with clean data:', cleanFormData);
+      
+      // Call the parent's onSubmit function
+      const result = await onSubmit(cleanFormData);
+      console.log('Submit result:', result);
+      
+      // Show success message and redirect to citizen dashboard
+      alert('Issue submitted successfully! Redirecting to dashboard...');
+      onClose();
+      navigate('/citizen-dashboard');
+      
+    } catch (error) {
+      console.error('Error submitting issue:', error);
+      alert('Failed to submit issue. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -76,7 +211,7 @@ export default function NewIssueModal({ onSubmit, onClose }) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: 'rgba(255, 255, 255, 1)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -113,14 +248,16 @@ export default function NewIssueModal({ onSubmit, onClose }) {
       boxSizing: 'border-box'
     }}>
       <div style={{
-        backgroundColor: '#112240',
-        borderRadius: '8px',
+        backgroundColor: 'rgba(0,0,0,0)',
+        backdropFilter: 'blur(40px)',
+        borderRadius: '10px',
         padding: '25px',
         width: '100%',
-        maxWidth: '600px',
+        maxWidth: '500px',
         maxHeight: '90vh',
         overflowY: 'auto',
-        boxShadow: '0 5px 15px rgba(0,0,0,0.3)'
+        className: 'modal-scroll',
+        boxShadow: '0 3px 3px rgba(165, 165, 165, 1)'
       }}>
         <div style={{
           display: 'flex',
@@ -157,7 +294,7 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               display: 'block',
               marginBottom: '5px',
               color: '#ccd6f6',
-              fontWeight: '500'
+              fontWeight: '500',
             }}>
               Category
             </label>
@@ -169,7 +306,7 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               style={{
                 width: '100%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a192f',
                 color: '#ccd6f6',
@@ -200,9 +337,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               value={formData.sector}
               readOnly
               style={{
-                width: '100%',
+                width: '96%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a1a2f',
                 color: '#8892b0',
@@ -228,9 +365,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               value={formData.houseId}
               readOnly
               style={{
-                width: '100%',
+                width: '96%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a1a2f',
                 color: '#8892b0',
@@ -257,9 +394,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               required
               rows="4"
               style={{
-                width: '100%',
+                width: '96%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a192f',
                 color: '#ccd6f6',
@@ -283,9 +420,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               accept="image/*"
               onChange={handleImageChange}
               style={{
-                width: '100%',
+                width: '96%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a192f',
                 color: '#ccd6f6',
@@ -298,9 +435,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
                   src={imagePreview} 
                   alt="Preview" 
                   style={{
-                    maxWidth: '100%',
+                    maxWidth: '96%',
                     maxHeight: '200px',
-                    borderRadius: '5px'
+                    borderRadius: '30px'
                   }}
                 />
               </div>
@@ -322,9 +459,9 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               value={formData.address}
               onChange={handleChange}
               style={{
-                width: '100%',
+                width: '96%',
                 padding: '10px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: '1px solid #233554',
                 backgroundColor: '#0a192f',
                 color: '#ccd6f6',
@@ -333,65 +470,85 @@ export default function NewIssueModal({ onSubmit, onClose }) {
             />
           </div>
           
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '15px',
-            marginBottom: '15px'
-          }}>
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '5px',
-                color: '#ccd6f6',
+          {/* Location Map */}
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '5px',
+              color: '#ccd6f6',
+              fontWeight: '500'
+            }}>
+              Select Location on Map
+            </label>
+            <div style={{
+              border: '1px solid #233554',
+              borderRadius: '30px',
+              overflow: 'hidden',
+              height: '200px'
+            }}>
+              <MapContainer
+                center={mapPosition}
+                zoom={13}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <LocationMarker position={mapPosition} setPosition={setMapPosition} />
+              </MapContainer>
+            </div>
+            <div style={{
+              marginTop: '10px',
+              padding: '10px',
+              backgroundColor: '#0a1a2f',
+              borderRadius: '30px',
+              border: '1px solid #233554'
+            }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '15px',
+                marginBottom: '10px'
+              }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '5px',
+                    color: '#8892b0',
+                    fontSize: '0.9rem'
+                  }}>
+                    Latitude: {formData.latitude}
+                  </label>
+                </div>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '5px',
+                    color: '#8892b0',
+                    fontSize: '0.9rem'
+                  }}>
+                    Longitude: {formData.longitude}
+                  </label>
+                </div>
+              </div>
+              <div style={{
+                color: '#64ffda',
+                fontSize: '0.9rem',
                 fontWeight: '500'
               }}>
-                Latitude
-              </label>
-              <input
-                type="number"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                step="any"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  border: '1px solid #233554',
-                  backgroundColor: '#0a192f',
-                  color: '#ccd6f6',
-                  fontSize: '1rem'
-                }}
-              />
+                📍 {locationName}
+              </div>
             </div>
+            <p style={{
+              color: '#8892b0',
+              fontSize: '0.8rem',
+              marginTop: '5px',
+              fontStyle: 'italic'
+            }}>
+              Click on the map to select the exact location of your issue
+            </p>
             
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '5px',
-                color: '#ccd6f6',
-                fontWeight: '500'
-              }}>
-                Longitude
-              </label>
-              <input
-                type="number"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                step="any"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  border: '1px solid #233554',
-                  backgroundColor: '#0a192f',
-                  color: '#ccd6f6',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
           </div>
           
           <div style={{
@@ -405,7 +562,7 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               onClick={onClose}
               style={{
                 padding: '10px 20px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: 'none',
                 background: '#ff6b6b',
                 color: '#fff',
@@ -422,7 +579,7 @@ export default function NewIssueModal({ onSubmit, onClose }) {
               disabled={loading}
               style={{
                 padding: '10px 20px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: 'none',
                 background: '#64ffda',
                 color: '#0a192f',

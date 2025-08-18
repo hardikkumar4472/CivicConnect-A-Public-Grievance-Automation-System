@@ -328,7 +328,7 @@ function Home() {
               <i className="fas fa-shield-alt" style={styles.shieldIcon}></i> Secure Municipal Portal
             </div>
           </div>
-          <p style={styles.footerText}>© {new Date().getFullYear()} CivicConnect Municipal Services</p>
+          <p style={styles.footerText}>© {new Date().getFullYear()} CivicConnect</p>
         </footer>
       </div>
 
@@ -429,7 +429,7 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d)',
+    background: 'linear-gradient(115deg, #ff9d00ff, #ffffffff, #73ff00ff)',
     backgroundSize: '400% 400%',
     animation: 'gradientBG 8s ease infinite',
     display: 'flex',
@@ -444,8 +444,9 @@ const styles = {
   loadingLogo: {
     width: '180px',
     marginBottom: '20px',
-    filter: 'drop-shadow(0 0 10px rgba(255, 255, 255, 0.7))',
     animation: 'pulse 2s infinite',
+    borderRadius: '50px',
+    filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.7))',
   },
   blinkingText: {
     fontSize: '2.5rem',
@@ -511,7 +512,8 @@ const styles = {
     height: '80px',
     objectFit: 'contain',
     marginBottom: '10px',
-    filter: 'drop-shadow(0 0 10px rgba(79, 195, 247, 0.5))',
+    borderRadius: '10px',
+    filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.7))',
   },
   headerTitle: {
     color: '#fff',
@@ -530,10 +532,10 @@ const styles = {
   },
   roleButton: {
     padding: '10px 15px',
-    backgroundColor: 'rgba(30, 58, 138, 0.7)',
+    backgroundColor: 'rgba(12, 12, 12, 0)',
     color: '#fff',
     border: 'none',
-    borderRadius: '50px',
+    borderRadius: '40px',
     fontSize: '0.9rem',
     cursor: 'pointer',
     display: 'flex',
@@ -541,7 +543,7 @@ const styles = {
     gap: '5px',
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    backdropFilter: 'blur(5px)',
+    backdropFilter: 'blur(30px)',
   },
   activeRoleButton: {
     backgroundColor: 'rgba(79, 195, 247, 0.8)',
@@ -551,21 +553,25 @@ const styles = {
     fontSize: '0.9rem',
   },
   formContainer: {
-    backgroundColor: 'rgba(19, 28, 46, 0.85)',
-    borderRadius: '12px',
-    padding: '20px',
+    backgroundColor: 'rgba(19, 28, 46, 0)',
+    borderRadius: '50px',
+    // padding: '20px',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-    backdropFilter: 'blur(8px)',
+    backdropFilter: 'blur(5px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    margin: '10px auto',
+    margin: '5px auto',
+    paddingTop: '50px',
+    paddingLeft: '10px',
     animation: 'fadeIn 0.8s ease',
-    width: '90%',
-    maxWidth: '400px',
+    width: '100%',
+    maxWidth: '450px',
+    height: '100%',
+    maxHeight: '300px',
   },
   loginForm: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '30px',
   },
   inputGroup: {
     position: 'relative',
@@ -585,24 +591,25 @@ const styles = {
   inputField: {
     width: '86%',
     padding: '12px 12px 12px 40px',
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'rgba(33, 31, 31, 0.56)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
+    borderRadius: '60px',
     color: 'white',
-    fontSize: '0.9rem',
+    fontSize: '0.8rem',
     transition: 'all 0.3s ease',
   },
   errorMessage: {
     color: '#ff6b6b',
-    fontSize: '0.8rem',
+    fontSize: '0.9rem',
     textAlign: 'center',
-    marginTop: '-10px',
+    marginTop: '-200px',
+    marginBottom: '160px',
   },
   loginButton: {
     padding: '12px',
     background: 'linear-gradient(135deg, #4fc3f7, #1976d2)',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '30px',
     color: 'white',
     fontSize: '0.9rem',
     fontWeight: '600',
@@ -610,12 +617,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
+    gap: '5px',
     position: 'relative',
     overflow: 'hidden',
     zIndex: 1,
     transition: 'all 0.3s ease',
-    width: '100%',
+    width: '30%',
+    marginLeft: '145px'
   },
   buttonLoader: {
     width: '18px',

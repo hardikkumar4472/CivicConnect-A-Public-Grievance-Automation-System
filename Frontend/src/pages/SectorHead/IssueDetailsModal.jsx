@@ -16,6 +16,9 @@ const IssueDetailsModal = ({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [addingComment, setAddingComment] = useState(false);
 
   // Status options exactly matching backend enum
   const statusOptions = ['Pending', 'In Progress', 'Resolved', 'Escalated', 'Closed'];
@@ -70,6 +73,13 @@ const IssueDetailsModal = ({
     };
 
     fetchCitizenDetails();
+
+    // Load existing comments from the issue
+    if (selectedIssue.comments && selectedIssue.comments.length > 0) {
+      setComments(selectedIssue.comments);
+    } else {
+      setComments([]);
+    }
   }, [selectedIssue]);
 
   const handleStatusChange = async () => {
@@ -119,6 +129,43 @@ const IssueDetailsModal = ({
   }
 };
 
+  const handleAddComment = async () => {
+    if (!comment.trim()) return;
+    
+    setAddingComment(true);
+    try {
+      const token = localStorage.getItem("token");
+      
+      const response = await axios.post(
+        `http://localhost:5000/api/issues/${selectedIssue._id}/comment`,
+        { text: comment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      // Add the new comment to the local state
+      const newComment = response.data.comment;
+      setComments([...comments, newComment]);
+      setComment("");
+      
+      // Refresh the issues list to show the updated comment
+      if (typeof refreshIssues === 'function') {
+        await refreshIssues();
+      }
+      
+      alert('Comment added successfully!');
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      alert(`Failed to add comment: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setAddingComment(false);
+    }
+  };
+
   if (!selectedIssue) return null;
 
   if (loadingCitizenDetails) {
@@ -140,7 +187,7 @@ const IssueDetailsModal = ({
           width: '50px',
           height: '50px',
           border: '5px solid rgba(255, 255, 255, 0.3)',
-          borderRadius: '50%',
+          borderRadius: '30px',
           borderTopColor: '#64ffda',
           animation: 'spin 1s ease-in-out infinite',
           marginBottom: '20px',
@@ -158,17 +205,18 @@ const IssueDetailsModal = ({
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'rgba(0, 0, 0, 0.8)',
+        background: 'rgba(0, 0, 0, 0.6)',
+        boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 1000,
-        backdropFilter: 'blur(5px)',
+        backdropFilter: 'blur(30px)',
       }} onClick={() => onClose(null)}>
         <div style={{
-          background: '#112240',
+          background: '#11224005',
           padding: '25px',
-          borderRadius: '10px',
+          borderRadius: '30px',
           width: '90%',
           maxWidth: '800px',
           maxHeight: '90vh',
@@ -176,6 +224,8 @@ const IssueDetailsModal = ({
           position: 'relative',
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
           color: '#ccd6f6',
+          // backdropFilter: 'blur(30px)',
+  
         }} onClick={(e) => e.stopPropagation()}>
           <button
             style={{
@@ -201,7 +251,7 @@ const IssueDetailsModal = ({
               <div style={{
                 display: 'inline-block',
                 padding: '5px 15px',
-                borderRadius: '20px',
+                borderRadius: '30px',
                 fontSize: '0.8rem',
                 fontWeight: '600',
                 marginTop: '10px',
@@ -212,7 +262,7 @@ const IssueDetailsModal = ({
               </div>
               <p style={{ color: '#8892b0', fontSize: '0.8rem' }}>Issue ID: {selectedIssue._id}</p>
             </div>
-            <div style={{ background: '#1e2a47', padding: '15px', borderRadius: '8px', minWidth: '200px' }}>
+            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '30px', minWidth: '200px' }}>
               <p><strong>Raised By:</strong> {citizenDetails.name}</p>
               <p><strong>Email:</strong> {citizenDetails.email}</p>
               <p><strong>Phone:</strong> {citizenDetails.phone}</p>
@@ -220,7 +270,7 @@ const IssueDetailsModal = ({
             </div>
           </div>
           
-          <div style={{ margin: '20px 0', borderRadius: '8px', overflow: 'hidden', maxHeight: '400px' }}>
+          <div style={{ margin: '20px 0', borderRadius: '30px', overflow: 'hidden', maxHeight: '400px' }}>
             <img
               src={selectedIssue.imageUrl || "https://via.placeholder.com/600x300?text=No+Image"}
               alt={selectedIssue.title}
@@ -265,12 +315,96 @@ const IssueDetailsModal = ({
               )}
             </div>
             
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ color: '#64ffda', fontSize: '1.1rem', marginBottom: '10px' }}>
+                Comments & Updates
+              </h3>
+              <div style={{
+                backgroundColor: 'rgba(0,0,0,0)',
+                padding: '15px',
+                borderRadius: '30px',
+                marginBottom: '15px',
+                maxHeight: '200px',
+                backdropFilter: 'blur(30px)',
+                overflowY: 'auto'
+
+              }}>
+                {comments.length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    color: '#8892b0',
+                    padding: '20px'
+                  }}>
+                    <i className="fas fa-info-circle" style={{ fontSize: '2rem', marginBottom: '10px', display: 'block' }}></i>
+                    <p>No comments yet</p>
+                    <p style={{ fontSize: '0.9rem', marginTop: '5px' }}>
+                      Add a comment to provide updates to the citizen.
+                    </p>
+                  </div>
+                ) : (
+                  comments.map(comment => (
+                    <div key={comment._id || comment.id} style={{
+                      marginBottom: '10px',
+                      paddingBottom: '10px',
+                      borderBottom: '1px solid #233554'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '5px'
+                      }}>
+                        <strong style={{ color: '#64ffda' }}>{comment.author}</strong>
+                        <span style={{ color: '#8892b0', fontSize: '0.8rem' }}>
+                          {new Date(comment.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p style={{ color: '#ccd6f6', margin: 0 }}>{comment.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="text"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add a comment or update..."
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    borderRadius: '30px',
+                    border: '1px solid #233554',
+                    backgroundColor: '#0a192f',
+                    color: '#ccd6f6',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={addingComment || !comment.trim()}
+                  style={{
+                    padding: '10px 15px',
+                    borderRadius: '30px',
+                    border: 'none',
+                    background: '#64ffda',
+                    color: '#0a192f',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    opacity: addingComment || !comment.trim() ? 0.7 : 1
+                  }}
+                >
+                  {addingComment ? 'Adding...' : 'Add Comment'}
+                </button>
+              </div>
+            </div>
+            
             <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ color: '#64ffda', fontWeight: '500' }}>Current Status: </span>
                 <span style={{ 
                   padding: '5px 10px',
-                  borderRadius: '20px',
+                  borderRadius: '30px',
                   fontSize: '0.8rem',
                   fontWeight: '600',
                   textTransform: 'uppercase',
@@ -286,7 +420,7 @@ const IssueDetailsModal = ({
                 }}
                 style={{
                   padding: '10px 15px',
-                  borderRadius: '5px',
+                  borderRadius: '30px',
                   border: 'none',
                   backgroundColor: '#1e2a47',
                   color: '#64ffda',
@@ -323,7 +457,7 @@ const IssueDetailsModal = ({
           <div style={{
             background: '#112240',
             padding: '25px',
-            borderRadius: '10px',
+            borderRadius: '30px',
             width: '90%',
             maxWidth: '400px',
             position: 'relative',
@@ -366,7 +500,7 @@ const IssueDetailsModal = ({
                     />
                     <span style={{ 
                       padding: '5px 10px',
-                      borderRadius: '5px',
+                      borderRadius: '30px',
                       ...statusStyles[status]
                     }}>
                       {status}
@@ -381,7 +515,7 @@ const IssueDetailsModal = ({
               disabled={!newStatus || isUpdating}
               style={{
                 padding: '10px 20px',
-                borderRadius: '5px',
+                borderRadius: '30px',
                 border: 'none',
                 backgroundColor: newStatus ? '#1e2a47' : '#1e2a4770',
                 color: newStatus ? '#64ffda' : '#8892b070',

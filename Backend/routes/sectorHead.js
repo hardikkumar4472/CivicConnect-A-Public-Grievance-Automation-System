@@ -8,7 +8,9 @@ import { getSectorAnalytics } from '../controllers/analyticsController.js';
 import { getSectorHeadDetails } from '../controllers/sectorHeadController.js';
 import { sendBroadcastEmailSectorHead } from '../controllers/sectorHeadController.js';
 import { getCitizensWithIssuesBySector } from '../controllers/sectorHeadController.js';
+// import { getSectorAverageRating } from '../controllers/sectorHeadController.js';
 // import { getCitizenDetails } from '../controllers/sectorHeadController.js';
+import { getSectorWiseRatings } from '../controllers/sectorHeadController.js';
 const router = express.Router();
 const isAdmin = async (req, res, next) => {
   const user = await Admin.findById(req.user.id);
@@ -19,7 +21,7 @@ const isAdmin = async (req, res, next) => {
   }
 };
 // router.get('/citizen/:id', authSectorHead, getCitizenDetails);
-router.get('/dashboard-summary', protect, getSectorDashboardSummary);
+router.get('/dashboard-summary', authSectorHead, getSectorDashboardSummary);
 router.post('/register', protect, isAdmin, registerSectorHead);
 router.post('/login', loginSectorHead);
 router.post('/forgot-password', forgotPasswordSectorHead);
@@ -29,5 +31,6 @@ router.get('/analytics', protect, authSectorHead, getSectorAnalytics);
 router.get("/me", authSectorHead, getSectorHeadDetails);
 router.post('/broadcast', authSectorHead, sendBroadcastEmailSectorHead);
 router.get('/sector-citizens', authSectorHead, getCitizensWithIssuesBySector);
+router.get('/average-rating', authSectorHead, getSectorWiseRatings);
 
 export default router;

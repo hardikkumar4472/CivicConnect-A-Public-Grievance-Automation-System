@@ -3,10 +3,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AnalyticsModal from "./AnalyticsModal";
 import LoadingSpinner from "./LoadingSpinner";
-import SectorHeadHeader from "./SectorHeadHeader";
 import IssueCard from "./IssueCard";
 import DashboardSummaryModal from "./DashboardSummaryModal";
 import IssueDetailsModal from "./IssueDetailsModal";
+import CreateCitizen from "./CreateCitizen";
+import BroadcastPage from "./BroadcastPage";
 
 export default function SectorHeadDashboard() {
   const [issues, setIssues] = useState([]);
@@ -37,7 +38,9 @@ export default function SectorHeadDashboard() {
     totalCitizens: 0
   });
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showCreateCitizen, setShowCreateCitizen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // Status options for filtering
@@ -75,7 +78,7 @@ export default function SectorHeadDashboard() {
         setSectorName(sectorRes.data.sector || "Unknown Sector");
         const issuesData = Array.isArray(issuesRes.data) ? issuesRes.data : issuesRes.data?.issues || [];
         setIssues(issuesData);
-        setFilteredIssues(issuesData); // Initialize filtered issues with all issues
+        setFilteredIssues(issuesData);
         setDashboardSummary(summaryRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -92,21 +95,34 @@ export default function SectorHeadDashboard() {
   }, [navigate]);
 
   // Filter issues based on active filter
-  // Update the filter logic in the useEffect
-useEffect(() => {
-  if (activeFilter === "all") {
-    setFilteredIssues(issues);
-  } else {
-    const normalize = str => str?.toLowerCase().replace(/[\s_]+/g, "-"); 
-    setFilteredIssues(
-      issues.filter(
-        issue => normalize(issue.status) === normalize(activeFilter)
-      )
-    );
-  }
-}, [activeFilter, issues]);
+  useEffect(() => {
+    if (activeFilter === "all") {
+      setFilteredIssues(issues);
+    } else {
+      const normalize = str => str?.toLowerCase().replace(/[\s_]+/g, "-"); 
+      setFilteredIssues(
+        issues.filter(
+          issue => normalize(issue.status) === normalize(activeFilter)
+        )
+      );
+    }
+  }, [activeFilter, issues]);
 
-
+  const fetchAnalytics = async () => {
+    setLoadingAnalytics(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        "http://localhost:5000/api/sector-head/analytics",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
 
   const fetchCitizenDetails = async (issue) => {
     if (!issue?.raisedBy) {
@@ -191,23 +207,244 @@ useEffect(() => {
       width: '100vw',
       overflowX: 'hidden'
     }}>
-      <SectorHeadHeader 
-        sectorName={sectorName} 
-        onShowDashboard={() => setShowDashboard(true)}
-        onShowAnalytics={() => {
-          fetchAnalytics();
-          setShowAnalytics(true);
-        }}
-        loadingAnalytics={loadingAnalytics}
-      />
+      {/* Custom Navbar */}
+      <div style={{
+        backgroundColor: '#0a192f',
+        padding: '15px 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottom: '1px solid #233554',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '20px'
+        }}>
+          <h2 style={{
+            color: '#64ffda',
+            margin: 0,
+            fontSize: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textShadow: '0 0 10px rgba(100, 255, 218, 0.3)',
+            transition: 'all 0.3s ease'
+          }}>
+            <i className="fas fa-map-marked-alt" style={{ transform: 'rotate(-15deg)' }}></i>
+            {sectorName}
+          </h2>
+        </div>
+        
+        {/* Mobile Menu Button (hidden on larger screens) */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          style={{
+            display: 'none',
+            background: 'transparent',
+            border: 'none',
+            color: '#64ffda',
+            fontSize: '1.5rem',
+            cursor: 'pointer',
+            padding: '5px',
+            borderRadius: '5px',
+            transition: 'all 0.3s ease',
+            ':hover': {
+              background: '#112240'
+            },
+            '@media (max-width: 768px)': {
+              display: 'block'
+            }
+          }}
+        >
+          <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+        </button>
+        
+        {/* Main Navigation (hidden on mobile when menu is closed) */}
+        <div style={{
+          display: 'flex',
+          gap: '15px',
+          alignItems: 'center',
+          '@media (max-width: 768px)': {
+            display: isMenuOpen ? 'flex' : 'none',
+            position: 'absolute',
+            top: '100%',
+            right: '20px',
+            backgroundColor: '#0a192f',
+            padding: '15px',
+            borderRadius: '8px',
+            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            border: '1px solid #233554',
+            zIndex: 1000
+          }
+        }}>
+          <button 
+            onClick={() => setShowCreateCitizen(true)}
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#64ffda',
+              border: 'none',
+              borderRadius: '30px',
+              color: '#0a192f',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 2px 10px rgba(100, 255, 218, 0.3)',
+              ':hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 15px rgba(100, 255, 218, 0.5)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            <i className="fas fa-user-plus"></i>
+            <span>Create Citizen</span>
+          </button>
 
-      {/* Main Content Area */}
+          <button 
+            onClick={() => navigate('/send-broadcast')}
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#112240',
+              border: '1px solid #233554',
+              borderRadius: '30px',
+              color: '#ccd6f6',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              ':hover': {
+                backgroundColor: '#1a2e4a',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            <i className="fas fa-bullhorn"></i>
+            <span>Broadcast</span>
+          </button>
+
+          <button 
+            onClick={() => setShowDashboard(true)}
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#112240',
+              border: '1px solid #233554',
+              borderRadius: '30px',
+              color: '#ccd6f6',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              ':hover': {
+                backgroundColor: '#1a2e4a',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            <i className="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </button>
+
+          <button 
+            onClick={() => {
+              fetchAnalytics();
+              setShowAnalytics(true);
+            }}
+            disabled={loadingAnalytics}
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#112240',
+              border: '1px solid #233554',
+              borderRadius: '30px',
+              color: '#ccd6f6',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              opacity: loadingAnalytics ? 0.7 : 1,
+              ':hover': {
+                backgroundColor: loadingAnalytics ? '#112240' : '#1a2e4a',
+                transform: loadingAnalytics ? 'none' : 'translateY(-2px)',
+                boxShadow: loadingAnalytics ? 'none' : '0 4px 10px rgba(0, 0, 0, 0.2)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            {loadingAnalytics ? (
+              <i className="fas fa-spinner fa-spin"></i>
+            ) : (
+              <i className="fas fa-chart-line"></i>
+            )}
+            <span>Analytics</span>
+          </button>
+
+          <button 
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/");
+            }}
+            style={{
+              padding: '10px 15px',
+              backgroundColor: '#112240',
+              border: '1px solid #233554',
+              borderRadius: '30px',
+              color: '#ccd6f6',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              ':hover': {
+                backgroundColor: '#1a2e4a',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
       <div style={{
         flex: 1,
         width: '100%',
         overflowY: 'auto',
         padding: '20px',
         boxSizing: 'border-box',
+        background: 'linear-gradient(135deg, #0a192f 0%, #0f2746 100%)'
       }}>
         <div style={{
           width: '100%',
@@ -224,22 +461,33 @@ useEffect(() => {
             gap: '15px'
           }}>
             <h2 style={{
-              fontSize: '1.5rem',
+              fontSize: '1.8rem',
               fontWeight: '600',
               margin: 0,
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              color: '#ccd6f6'
+              color: '#ccd6f6',
+              textShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+              '@media (max-width: 768px)': {
+                fontSize: '1.5rem'
+              }
             }}>
-              <i className="fas fa-exclamation-circle"></i> Reported Issues in Your Sector
+              <i className="fas fa-exclamation-circle" style={{ 
+                color: '#64ffda',
+                animation: 'pulse 2s infinite'
+              }}></i> 
+              Reported Issues in Your Sector
             </h2>
             
-            {/* Status Filter Navbar */}
             <div style={{
               display: 'flex',
               gap: '10px',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
+              '@media (max-width: 768px)': {
+                justifyContent: 'center',
+                width: '100%'
+              }
             }}>
               {statusFilters.map(filter => (
                 <button
@@ -249,7 +497,9 @@ useEffect(() => {
                     padding: '8px 15px',
                     borderRadius: '20px',
                     border: 'none',
-                    background: activeFilter === filter.id ? '#64ffda' : '#112240',
+                    background: activeFilter === filter.id ? 
+                      'linear-gradient(135deg, #64ffda 0%, #52dbb7 100%)' : 
+                      'linear-gradient(135deg, #112240 0%, #1a2e4a 100%)',
                     color: activeFilter === filter.id ? '#0a192f' : '#ccd6f6',
                     cursor: 'pointer',
                     fontWeight: '600',
@@ -257,7 +507,19 @@ useEffect(() => {
                     transition: 'all 0.3s ease',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px'
+                    gap: '5px',
+                    boxShadow: activeFilter === filter.id ? 
+                      '0 4px 15px rgba(100, 255, 218, 0.4)' : 
+                      '0 2px 5px rgba(0, 0, 0, 0.1)',
+                    ':hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: activeFilter === filter.id ? 
+                        '0 6px 20px rgba(100, 255, 218, 0.6)' : 
+                        '0 4px 10px rgba(0, 0, 0, 0.2)'
+                    },
+                    ':active': {
+                      transform: 'translateY(0)'
+                    }
                   }}
                 >
                   {filter.label}
@@ -271,27 +533,50 @@ useEffect(() => {
               textAlign: 'center',
               padding: '40px 20px',
               color: '#8892b0',
-              backgroundColor: '#112240',
-              borderRadius: '8px',
+              backgroundColor: 'rgba(17, 34, 64, 0.7)',
+              borderRadius: '12px',
               marginTop: '20px',
+              border: '1px dashed #233554',
+              transition: 'all 0.3s ease',
+              ':hover': {
+                backgroundColor: 'rgba(17, 34, 64, 0.9)',
+                transform: 'translateY(-3px)',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+              }
             }}>
               <i className="fas fa-check-circle" style={{
-                fontSize: '3rem',
+                fontSize: '3.5rem',
                 color: '#64ffda',
                 marginBottom: '15px',
+                filter: 'drop-shadow(0 0 10px rgba(100, 255, 218, 0.3))'
               }}></i>
-              <p style={{ fontSize: '1.1rem' }}>
+              <h3 style={{
+                fontSize: '1.3rem',
+                marginBottom: '10px',
+                color: '#ccd6f6'
+              }}>
                 {activeFilter === "all" 
                   ? "No issues reported in your sector yet." 
                   : `No ${statusFilters.find(f => f.id === activeFilter)?.label} issues found.`}
+              </h3>
+              <p style={{ 
+                fontSize: '1rem',
+                opacity: 0.8
+              }}>
+                {activeFilter === "all" 
+                  ? "When citizens report issues, they'll appear here." 
+                  : "Try a different filter or check back later."}
               </p>
             </div>
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '25px',
               width: '100%',
+              '@media (max-width: 768px)': {
+                gridTemplateColumns: '1fr'
+              }
             }}>
               {filteredIssues.map((issue) => (
                 <IssueCard
@@ -306,7 +591,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Dashboard Summary Modal */}
       {showDashboard && (
         <DashboardSummaryModal 
           dashboardSummary={dashboardSummary} 
@@ -314,7 +598,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Analytics Modal */}
       {showAnalytics && (
         <AnalyticsModal 
           analytics={analytics} 
@@ -323,7 +606,13 @@ useEffect(() => {
         />
       )}
 
-      {/* Issue Details Modal */}
+      {showCreateCitizen && (
+        <CreateCitizen 
+          sectorName={sectorName} 
+          onClose={() => setShowCreateCitizen(false)} 
+        />
+      )}
+
       {selectedIssue && (
         <IssueDetailsModal
           selectedIssue={selectedIssue}
@@ -334,7 +623,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Inline CSS */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
@@ -343,10 +631,53 @@ useEffect(() => {
           to { transform: rotate(360deg); }
         }
         
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
         body {
           margin: 0;
           padding: 0;
           overflow-x: hidden;
+        }
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        /* Card hover effect */
+        .issue-card {
+          transition: all 0.3s ease;
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        .issue-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .navbar-buttons {
+            flex-direction: column;
+            align-items: flex-end;
+          }
+          
+          .filter-buttons {
+            justify-content: center;
+          }
         }
       `}</style>
     </div>

@@ -5,6 +5,7 @@ import LoadingSpinner from "./SectorHead/LoadingSpinner";
 import IssueCard from "./IssueCard";
 import IssueDetailsModal from "./CitizenDashboard/IssueDetailsModal";
 import NewIssueModal from "./CitizenDashboard/NewIssueModal";
+import FeedbackModal from "./FeedbackModal";
 
 export default function CitizenDashboard() {
   const [issues, setIssues] = useState([]);
@@ -15,9 +16,11 @@ export default function CitizenDashboard() {
   const [showNewIssueModal, setShowNewIssueModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
   const [exporting, setExporting] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [issueToFeedback, setIssueToFeedback] = useState(null);
+  const [feedbacks, setFeedbacks] = useState({});
   const navigate = useNavigate();
 
-  // Status options for filtering
   const statusFilters = [
     { id: "all", label: "All Issues" },
     { id: "pending", label: "Pending" },
@@ -27,46 +30,79 @@ export default function CitizenDashboard() {
     { id: "closed", label: "Closed" }
   ];
 
-  // First load all data
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchFeedbacks = async (token, issuesData) => {
+    const closedIssues = issuesData.filter(issue => issue.status === "closed");
+    if (closedIssues.length > 0) {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/");
-          return;
+        const response = await axios.get(
+          "http://localhost:5000/api/feedback/batch",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: {
+              issueIds: closedIssues.map(issue => issue._id).join(',')
+            }
+          }
+        );
+        
+        if (response.data && response.data.feedbacks) {
+          const feedbacksMap = {};
+          response.data.feedbacks.forEach(feedback => {
+            if (feedback) {
+              feedbacksMap[feedback.issueId] = feedback;
+            }
+          });
+          return feedbacksMap;
         }
-
-        const [citizenRes, issuesRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/citizen/me", {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get("http://localhost:5000/api/issues/my", {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
-
-        setCitizenName(citizenRes.data.name || "Citizen");
-        const issuesData = Array.isArray(issuesRes.data)
-          ? issuesRes.data
-          : issuesRes.data?.issues || [];
-        setIssues(issuesData);
-        setFilteredIssues(issuesData);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        if (error.response?.status === 401) {
-          localStorage.removeItem("token");
-          navigate("/");
-        }
-      } finally {
-        setLoading(false);
+        console.error("Error fetching feedbacks:", error);
       }
-    };
+    }
+    return {};
+  };
 
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      const [citizenRes, issuesRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/citizen/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get("http://localhost:5000/api/issues/my", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      setCitizenName(citizenRes.data.name || "Citizen");
+      const issuesData = Array.isArray(issuesRes.data)
+        ? issuesRes.data
+        : issuesRes.data?.issues || [];
+      
+      const feedbacksData = await fetchFeedbacks(token, issuesData);
+      
+      setIssues(issuesData);
+      setFilteredIssues(issuesData);
+      setFeedbacks(feedbacksData);
+      
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [navigate]);
 
-  // Filter issues based on active filter
   useEffect(() => {
     if (activeFilter === "all") {
       setFilteredIssues(issues);
@@ -136,6 +172,34 @@ export default function CitizenDashboard() {
     setSelectedIssue(null);
   };
 
+  const handleFeedbackClick = (issue) => {
+    setIssueToFeedback(issue);
+    setShowFeedbackModal(true);
+  };
+
+  const handleFeedbackSubmit = async (issueId, rating, comment) => {
+  try {
+     const token = localStorage.getItem("token");
+    await axios.post(
+      "http://localhost:5000/api/feedback/submit",
+      { issueId, rating, comment },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Safe update
+    setIssues((prev) =>
+      prev.map((issue) => {
+        if (!issue || !issue._id) return issue; // <-- guard
+        return issue._id === issueId ? { ...issue, hasFeedback: true } : issue;
+      })
+    );
+
+  } catch (err) {
+    console.error("Error submitting feedback:", err.message);
+  }
+};
+
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -155,7 +219,6 @@ export default function CitizenDashboard() {
         overflowX: "hidden"
       }}
     >
-      {/* Header */}
       <header
         style={{
           backgroundColor: "#112240",
@@ -185,7 +248,7 @@ export default function CitizenDashboard() {
             onClick={() => setShowNewIssueModal(true)}
             style={{
               padding: "8px 15px",
-              borderRadius: "5px",
+              borderRadius: "100px",
               border: "none",
               background: "#64ffda",
               color: "#0a192f",
@@ -206,7 +269,7 @@ export default function CitizenDashboard() {
             disabled={exporting}
             style={{
               padding: "8px 15px",
-              borderRadius: "5px",
+              borderRadius: "100px",
               border: "none",
               background: "#1e90ff",
               color: "#fff",
@@ -235,7 +298,7 @@ export default function CitizenDashboard() {
             onClick={handleLogout}
             style={{
               padding: "8px 15px",
-              borderRadius: "5px",
+              borderRadius: "100px",
               border: "none",
               background: "#ff6b6b",
               color: "#fff",
@@ -253,7 +316,6 @@ export default function CitizenDashboard() {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <div
         style={{
           flex: 1,
@@ -295,7 +357,6 @@ export default function CitizenDashboard() {
               <i className="fas fa-exclamation-circle"></i> Your Reported Issues
             </h2>
 
-            {/* Status Filter Navbar */}
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               {statusFilters.map((filter) => (
                 <button
@@ -386,6 +447,12 @@ export default function CitizenDashboard() {
                   issue={issue}
                   isSelected={selectedIssue?._id === issue._id}
                   onClick={() => handleIssueClick(issue)}
+                  onFeedbackClick={
+                    issue.status?.toLowerCase() === "closed" && !feedbacks[issue._id]
+                      ? () => handleFeedbackClick(issue)
+                      : null
+                  }
+                  feedback={feedbacks[issue._id]}
                 />
               ))}
             </div>
@@ -393,7 +460,6 @@ export default function CitizenDashboard() {
         </div>
       </div>
 
-      {/* New Issue Modal */}
       {showNewIssueModal && (
         <NewIssueModal
           onSubmit={handleCreateNewIssue}
@@ -401,28 +467,50 @@ export default function CitizenDashboard() {
         />
       )}
 
-      {/* Issue Details Modal */}
       {selectedIssue && (
         <IssueDetailsModal
           selectedIssue={selectedIssue}
           onClose={closeModal}
           isCitizenView={true}
+          feedback={feedbacks[selectedIssue._id]}
         />
       )}
 
-      {/* Inline CSS */}
+      {showFeedbackModal && issueToFeedback && (
+        <FeedbackModal
+          issue={issueToFeedback}
+          existingFeedback={feedbacks[issueToFeedback._id]}
+          onSubmit={(rating, comment) => 
+            handleFeedbackSubmit(issueToFeedback._id, rating, comment)
+          }
+          onClose={() => {
+            setShowFeedbackModal(false);
+            setIssueToFeedback(null);
+          }}
+        />
+      )}
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
-        
+       
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
-        
+       
         body {
           margin: 0;
           padding: 0;
           overflow-x: hidden;
+        }
+
+        .issue-card {
+          transition: all 0.3s ease;
+        }
+
+        .issue-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 6px 8px rgba(255, 255, 255, 0.15);
         }
       `}</style>
     </div>

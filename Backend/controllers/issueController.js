@@ -3,6 +3,8 @@ import axios from 'axios';
 import PDFDocument from 'pdfkit';
 import nodemailer from 'nodemailer';
 import { Parser } from 'json2csv';
+import SectorHead from '../models/SectorHead.js';
+import Feedback from '../models/Feedback.js';
 
 export const reportIssue = async (req, res) => {
   try {
@@ -108,7 +110,7 @@ const doc = new PDFDocument({
     <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #333;">
       <h4 style="color: #4d9de0; margin-bottom: 12px; font-size: 16px;">Need Help?</h4>
       <ul style="color: #ddd; font-size: 14px; padding-left: 20px; margin: 0;">
-        <li style="margin-bottom: 8px;">Contact support at support@civicconnect.gov</li>
+        <li style="margin-bottom: 8px;">Contact support at civicconnectpvt@gmail.com</li>
         <li style="margin-bottom: 8px;">Visit our FAQ section for common questions</li>
         <li>Check our response time guidelines for different issue types</li>
       </ul>
@@ -119,9 +121,6 @@ const doc = new PDFDocument({
   <div style="background: #1a1a1a; padding: 20px; text-align: center; border-top: 1px solid #333;">
     <p style="margin: 0; color: #aaa; font-size: 13px;">
       &copy; ${new Date().getFullYear()} <span style="color: #4d9de0;">CivicConnect</span> | Citizen Support System
-    </p>
-    <p style="margin: 5px 0 0; color: #666; font-size: 12px;">
-      This is an automated message. Please do not reply to this email.
     </p>
   </div>
 </div>`,
@@ -287,7 +286,10 @@ export const getSectorIssues = async (req, res) => {
   try {
     const sector = req.sectorHead.sector;
 
-    const issues = await Issue.find({ sector }).sort({ createdAt: -1 }).populate('citizen', 'name email houseId');
+    const issues = await Issue.find({ sector })
+      .sort({ createdAt: -1 })
+      .populate('citizen', 'name email houseId')
+      .select('-__v'); // Exclude version key but include comments
 
     res.status(200).json({ issues });
   } catch (error) {
@@ -368,20 +370,31 @@ export const exportIssues = async (req, res) => {
 };
 
 
+
 export const getCitizenIssues = async (req, res) => {
   try {
-    const citizenId = req.user.id;
+    const citizenId = req.citizen._id;
 
-    const issues = await Issue.find({ citizen: citizenId })
-      .sort({ createdAt: -1 }) 
-      .select('title description status referenceNumber createdAt updatedAt');
+    // Fetch issues for this citizen
+    const issues = await Issue.find({ citizen: citizenId }).sort({ createdAt: -1 });
 
-    res.status(200).json({ issues });
+    // For each issue, check if feedback exists
+    const issuesWithFeedback = await Promise.all(
+      issues.map(async (issue) => {
+        const feedback = await Feedback.findOne({ citizen: citizenId, issue: issue._id });
+        return {
+          ...issue.toObject(),
+          hasFeedback: !!feedback, // true if feedback exists
+        };
+      })
+    );
+
+    res.json(issuesWithFeedback);
   } catch (error) {
-    console.error('Error fetching citizen issues:', error);
-    res.status(500).json({ message: 'Failed to fetch issues' });
+    res.status(500).json({ message: "Error fetching issues", error: error.message });
   }
 };
+
 
 export const updateIssueStatus = async (req, res) => {
   try {
@@ -408,5 +421,42 @@ export const updateIssueStatus = async (req, res) => {
   } catch (error) {
     console.error('Error updating issue status:', error);
     res.status(500).json({ message: 'Server error while updating issue status' });
+  }
+};
+
+export const addComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text } = req.body;
+    const sectorHeadID = req.user?.id; // from auth middleware
+
+    if (!sectorHeadID) {
+      return res.status(401).json({ message: 'Unauthorized - Sector Head not authenticated' });
+    }
+
+    const sectorHead = await SectorHead.findById(sectorHeadID);
+    if (!sectorHead) {
+      return res.status(404).json({ message: 'Sector Head not found' });
+    }
+
+    const issue = await Issue.findById(id);
+    if (!issue) {
+      return res.status(404).json({ message: 'Issue not found' });
+    }
+
+    // ✅ Push comment with required fields
+    issue.comments.push({
+      text,
+      author: sectorHead.name,       // string (name or email works)
+      authorType: 'Sector Head',     // must match enum
+      createdAt: new Date()
+    });
+
+    await issue.save();
+
+    res.status(200).json({ message: "Comment added successfully", issue });
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    res.status(500).json({ message: "Server error while adding comment" });
   }
 };

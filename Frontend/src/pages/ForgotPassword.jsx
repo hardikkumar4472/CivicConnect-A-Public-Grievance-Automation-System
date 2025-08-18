@@ -20,12 +20,12 @@ const ForgotPassword = () => {
     e.preventDefault();
     
     if (!email) {
-      toast.error('Please enter your email address');
+      alert('Please enter your email address');
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.error('Please enter a valid email address');
+      alert('Please enter a valid email address');
       return;
     }
 
@@ -38,7 +38,7 @@ const ForgotPassword = () => {
       );
       
       if (response.data.success) {
-        toast.success('Password reset link sent successfully! Check your email.', {
+        alert('Password reset link sent successfully! Check your email.', {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -51,17 +51,17 @@ const ForgotPassword = () => {
           navigate('/');
         }, 3000);
       } else {
-        toast.error(response.data.message || 'Failed to send reset link');
+        alert(response.data.message || 'Failed to send reset link');
       }
     } catch (err) {
       if (err.response) {
         if (err.response.status === 404) {
-          toast.error('Email not found. Please check your email address.');
+          alert('Email not found. Please check your email address.');
         } else {
-          toast.error(err.response.data.message || 'An error occurred. Please try again.');
+          alert(err.response.data.message || 'An error occurred. Please try again.');
         }
       } else {
-        toast.error('Network error. Please check your connection.');
+        alert('Network error. Please check your connection.');
       }
     } finally {
       setIsLoading(false);
@@ -80,10 +80,10 @@ const ForgotPassword = () => {
     },
     card: {
       backgroundColor: 'rgba(15, 23, 42, 0.9)',
-      borderRadius: '12px',
-      padding: '30px',
+      borderRadius: '40px',
+      padding: '60px',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-      backdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(50px)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       width: '100%',
       maxWidth: '450px',
@@ -114,19 +114,19 @@ const ForgotPassword = () => {
       fontSize: '0.9rem',
     },
     input: {
-      width: '100%',
+      width: '92%',
       padding: '12px 15px',
       background: 'rgba(255, 255, 255, 0.05)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
-      borderRadius: '8px',
+      borderRadius: '350px',
       color: 'white',
       fontSize: '0.9rem',
     },
     button: {
       padding: '12px',
-      background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+      background: 'linear-gradient(135deg, #ffc550ff, #2563eb)',
       border: 'none',
-      borderRadius: '8px',
+      borderRadius: '560px',
       color: 'white',
       fontSize: '0.9rem',
       fontWeight: '600',
@@ -136,6 +136,9 @@ const ForgotPassword = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      maxWidth: '200px',
+      width: '100%',
+      marginLeft: '127px'
     },
     backButton: {
       background: 'transparent',
@@ -147,6 +150,7 @@ const ForgotPassword = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      marginLeft: '175px'
     },
   };
 

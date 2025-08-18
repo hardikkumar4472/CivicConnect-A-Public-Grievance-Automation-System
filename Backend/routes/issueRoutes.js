@@ -1,5 +1,5 @@
 import express from 'express';
-import { reportIssue, getMyIssues, getSectorIssues  } from '../controllers/issueController.js';
+import { reportIssue, getMyIssues, getSectorIssues, addComment  } from '../controllers/issueController.js';
 import authCitizen from '../middleware/authCitizen.js';
 import authSectorHead from '../middleware/authSectorHead.js';
 import { forceCloseIssue } from '../controllers/issueController.js';
@@ -10,6 +10,7 @@ import { updateIssueStatus } from '../controllers/issueController.js';
 
 const router = express.Router(); 
 router.put('/:id/status', authSectorHead, updateIssueStatus);
+router.post('/:id/comment', authSectorHead, addComment);
 router.post('/report', authCitizen, reportIssue);
 router.get('/my', authCitizen, getMyIssues);
 router.get('/sector', authSectorHead, getSectorIssues);

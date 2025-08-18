@@ -1,36 +1,38 @@
 import React from "react";
 
-export default function IssueCard({ issue, isSelected, onClick }) {
+export default function IssueCard({
+  issue,
+  isSelected,
+  onClick,
+  onFeedbackClick,
+  feedback
+}) {
   const statusColors = {
-    'pending': '#FFA500',      // Orange
-    'in-progress': '#1E90FF',  // Dodger Blue
-    'resolved': '#32CD32',     // Lime Green
-    'escalated': '#FF4500',    // Orange Red
-    'closed': '#808080'        // Gray
+    'pending': '#FFA500',
+    'in-progress': '#1E90FF',
+    'resolved': '#32CD32',
+    'escalated': '#FF4500',
+    'closed': '#808080'
   };
 
   const normalizeStatus = (status) => {
-    return status.toLowerCase().replace(/\s+/g, '-');
+    return status ? status.toLowerCase().replace(/\s+/g, '-') : '';
   };
 
   const status = normalizeStatus(issue.status);
   const statusColor = statusColors[status] || '#CCCCCC';
 
   return (
-    <div 
+    <div
+      className="issue-card"
       onClick={onClick}
       style={{
         backgroundColor: isSelected ? '#233554' : '#112240',
-        borderRadius: '8px',
+        borderRadius: '20px',
         padding: '15px',
         cursor: 'pointer',
-        transition: 'all 0.3s ease',
         borderLeft: `4px solid ${statusColor}`,
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 6px 8px rgba(0,0,0,0.15)'
-        }
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}
     >
       <div style={{
@@ -42,7 +44,7 @@ export default function IssueCard({ issue, isSelected, onClick }) {
         <h3 style={{
           margin: 0,
           color: '#64ffda',
-          fontSize: '1.1rem',
+          fontSize: '1.7rem',
           fontWeight: '600'
         }}>
           {issue.category}
@@ -89,6 +91,57 @@ export default function IssueCard({ issue, isSelected, onClick }) {
           {issue.sector}
         </span>
       </div>
+
+      {issue.status?.toLowerCase() === 'closed' && !issue.hasFeedback && (
+        <div style={{ marginTop: '15px', borderTop: '1px solid #233554', paddingTop: '10px' }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFeedbackClick && onFeedbackClick();
+            }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              background: '#64ffda',
+              color: '#0a192f',
+              border: 'none',
+              borderRadius: '100px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px'
+            }}
+          >
+            <i className="fas fa-star"></i>
+            Provide Rating
+          </button>
+        </div>
+      )}
+
+      {issue.status?.toLowerCase() === 'closed' && issue.hasFeedback && (
+        <div style={{ marginTop: '15px', borderTop: '1px solid #233554', paddingTop: '10px' }}>
+          <div style={{
+            width: '100%',
+            padding: '8px',
+            background: '#233554',
+            color: '#64ffda',
+            borderRadius: '4px',
+            fontWeight: '600',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '5px',
+            border: '1px solid #64ffda'
+          }}>
+            <i className="fas fa-check-circle"></i>
+            Feedback Submitted Successfully
+          </div>
+        </div>
+      )}
     </div>
   );
 }

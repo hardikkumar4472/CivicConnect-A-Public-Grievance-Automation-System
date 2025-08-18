@@ -75,7 +75,7 @@ const htmlTemplate = `
 
     <!-- CTA Button -->
     <div style="text-align: center; margin-top: 30px;">
-      <a href="#" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
+      <a href="http://localhost:5173/" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
         Log In Now
       </a>
     </div>
@@ -97,7 +97,7 @@ const htmlTemplate = `
       &copy; ${new Date().getFullYear()} <span style="color: #4d9de0;">CivicConnect</span> | Citizen Registration System
     </p>
     <p style="margin: 5px 0 0; color: #666; font-size: 12px;">
-      This is an automated message. Please do not reply to this email.
+      For any issue reply to this email.
     </p>
   </div>
 </div>
@@ -206,7 +206,7 @@ export const forgotPasswordCitizen = async (req, res) => {
     </p>
     
     <p style="font-size: 15px; line-height: 1.6; color: #ddd; margin-bottom: 25px;">
-      Click the button below to securely reset your password. This link will expire in 24 hours.
+      Click the button below to securely reset your password. 
     </p>
 
     <!-- CTA Button -->
@@ -228,7 +228,7 @@ export const forgotPasswordCitizen = async (req, res) => {
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
       <h4 style="color: #4d9de0; margin-bottom: 12px; font-size: 16px;">Need help?</h4>
       <p style="color: #ddd; font-size: 14px; margin: 8px 0;">
-        Contact our support team at <a href="mailto:support@civicconnect.com" style="color: #ff6b35; text-decoration: none;">support@civicconnect.com</a>
+        Contact our support team at <a href="mailto:civicconnectpvt@gmail.com" style="color: #ff6b35; text-decoration: none;">civicconnectpvt@gmail.com</a>
       </p>
     </div>
   </div>
@@ -237,9 +237,6 @@ export const forgotPasswordCitizen = async (req, res) => {
   <div style="background: #1a1a1a; padding: 20px; text-align: center; border-top: 1px solid #333;">
     <p style="margin: 0; color: #aaa; font-size: 13px;">
       &copy; ${new Date().getFullYear()} <span style="color: #4d9de0;">CivicConnect</span> | Account Security Team
-    </p>
-    <p style="margin: 5px 0 0; color: #666; font-size: 12px;">
-      For your security, this link will expire after 24 hours.
     </p>
   </div>
 </div>
@@ -341,7 +338,7 @@ export const resetPasswordCitizen = async (req, res) => {
       &copy; ${new Date().getFullYear()} <span style="color: #4d9de0;">CivicConnect</span> | Account Security Team
     </p>
     <p style="margin: 5px 0 0; color: #666; font-size: 12px;">
-      If you didn't make this change, contact us immediately at <a href="mailto:security@civicconnect.com" style="color: #ff6b35; text-decoration: none;">security@civicconnect.com</a>
+      If you didn't make this change, contact us immediately at <a href="mailto:civicconnectpvt@gmail.com" style="color: #ff6b35; text-decoration: none;">civicconnectpvt@gmail.com</a>
     </p>
   </div>
 </div>

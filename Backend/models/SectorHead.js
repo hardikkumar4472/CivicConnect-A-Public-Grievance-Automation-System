@@ -7,7 +7,7 @@ const sectorHeadSchema = new mongoose.Schema({
   },
   sector: {
     type: String,
-    required: true,
+    // required: true,
     unique: true,
   },
   email: {
@@ -18,7 +18,7 @@ const sectorHeadSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    // required: true,
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,

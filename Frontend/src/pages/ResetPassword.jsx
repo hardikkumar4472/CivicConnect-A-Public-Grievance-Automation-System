@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -19,7 +20,7 @@ const ResetPassword = () => {
     document.body.style.padding = '0';
     document.body.style.width = '100%';
     document.body.style.overflowX = 'hidden';
-    document.body.style.backgroundColor = '#0f172a'; // Dark background
+    document.body.style.backgroundColor = '#0a0a0a';
   }, []);
 
   const validateForm = () => {
@@ -70,15 +71,32 @@ const ResetPassword = () => {
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
+        theme: "dark",
+        style: {
+          background: '#1e293b',
+          color: '#f8fafc',
+        }
       });
       
       setTimeout(() => navigate('/'), 3000);
     } catch (err) {
       if (err.response?.status === 400) {
         setIsValidToken(false);
-        toast.error('Invalid or expired token. Please request a new password reset link.');
+        toast.error('Invalid or expired token. Please request a new password reset link.', {
+          theme: "dark",
+          style: {
+            background: '#1e293b',
+            color: '#f8fafc',
+          }
+        });
       } else {
-        toast.error(err.response?.data?.message || 'Error resetting password. Please try again.');
+        toast.error(err.response?.data?.message || 'Error resetting password. Please try again.', {
+          theme: "dark",
+          style: {
+            background: '#1e293b',
+            color: '#f8fafc',
+          }
+        });
       }
     } finally {
       setIsLoading(false);
@@ -87,31 +105,66 @@ const ResetPassword = () => {
 
   if (!isValidToken) {
     return (
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <h2 style={styles.title}>Invalid Token</h2>
-          <p style={styles.subtitle}>The password reset link is invalid or has expired</p>
-          <button 
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        style={styles.container}
+      >
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          style={styles.card}
+        >
+          <div style={styles.header}>
+            <h2 style={styles.title}>Invalid Token</h2>
+            <p style={styles.subtitle}>The password reset link is invalid or has expired</p>
+          </div>
+          <motion.button 
             onClick={() => navigate('/forgot-password')} 
             style={styles.button}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             Request New Reset Link
-          </button>
-        </div>
-      </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      style={styles.container}
+    >
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        style={styles.card}
+      >
         <div style={styles.header}>
-          <h2 style={styles.title}>Reset Your Password</h2>
-          <p style={styles.subtitle}>Create a new password for your account</p>
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <h2 style={styles.title}>Reset Your Password</h2>
+            <p style={styles.subtitle}>Create a new password for your account</p>
+          </motion.div>
         </div>
         
         <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}>
+          <motion.div 
+            initial={{ x: -10, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            style={styles.inputGroup}
+          >
             <label style={styles.label}>New Password</label>
             <input
               type="password"
@@ -125,10 +178,23 @@ const ResetPassword = () => {
               }}
               required
             />
-            {errors.password && <span style={styles.errorText}>{errors.password}</span>}
-          </div>
+            {errors.password && (
+              <motion.span 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={styles.errorText}
+              >
+                {errors.password}
+              </motion.span>
+            )}
+          </motion.div>
           
-          <div style={styles.inputGroup}>
+          <motion.div 
+            initial={{ x: -10, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+            style={styles.inputGroup}
+          >
             <label style={styles.label}>Confirm Password</label>
             <input
               type="password"
@@ -142,28 +208,80 @@ const ResetPassword = () => {
               }}
               required
             />
-            {errors.confirmPassword && <span style={styles.errorText}>{errors.confirmPassword}</span>}
-          </div>
+            {errors.confirmPassword && (
+              <motion.span 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={styles.errorText}
+              >
+                {errors.confirmPassword}
+              </motion.span>
+            )}
+          </motion.div>
           
-          <button 
+          <motion.button 
             type="submit" 
             style={styles.button} 
             disabled={isLoading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {isLoading ? 'Resetting Password...' : 'Reset Password'}
-          </button>
+            {isLoading ? (
+              <motion.span
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                Resetting Password...
+              </motion.span>
+            ) : (
+              'Reset Password'
+            )}
+          </motion.button>
         </form>
         
-        <div style={styles.footer}>
-          <button 
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.3 }}
+          style={styles.footer}
+        >
+          <motion.button 
             onClick={() => navigate('/')} 
             style={styles.secondaryButton}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             Back to Login
-          </button>
-        </div>
-      </div>
-    </div>
+          </motion.button>
+        </motion.div>
+      </motion.div>
+
+      {/* Animated background elements */}
+      <motion.div 
+        style={styles.orb1}
+        animate={{
+          x: [0, 20, 0],
+          y: [0, 30, 0],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          repeatType: "reverse"
+        }}
+      />
+      <motion.div 
+        style={styles.orb2}
+        animate={{
+          x: [0, -20, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          repeatType: "reverse"
+        }}
+      />
+    </motion.div>
   );
 };
 
@@ -175,113 +293,149 @@ const styles = {
     minHeight: '100vh',
     width: '100vw',
     padding: '20px',
-    backgroundColor: '#0f172a', // Dark slate background
+    backgroundColor: '#0a0a0a',
     fontFamily: "'Inter', sans-serif",
+    position: 'relative',
+    overflow: 'hidden',
   },
   card: {
-    backgroundColor: '#1e293b', // Darker slate for card
-    borderRadius: '12px',
+    backgroundColor: '#111827',
+    borderRadius: '30px',
     padding: '40px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
     width: '100%',
     maxWidth: '450px',
     textAlign: 'center',
-    border: '1px solid #334155', // Subtle border
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    position: 'relative',
+    zIndex: 2,
+    backdropFilter: 'blur(10px)',
+    background: 'rgba(17, 24, 39, 0.85)',
   },
   header: {
     marginBottom: '32px',
   },
   title: {
-    color: '#f8fafc', // Light text
-    fontSize: '24px',
-    fontWeight: '600',
-    marginBottom: '8px',
+    color: '#f8fafc',
+    fontSize: '28px',
+    fontWeight: '700',
+    marginBottom: '12px',
+    background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
   },
   subtitle: {
-    color: '#94a3b8', // Lighter text
-    fontSize: '14px',
+    color: '#94a3b8',
+    fontSize: '15px',
     marginBottom: '0',
+    lineHeight: '1.5',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '24px',
   },
   inputGroup: {
     textAlign: 'left',
+    position: 'relative',
   },
   label: {
     display: 'block',
-    marginBottom: '8px',
-    color: '#e2e8f0', // Light label
+    marginBottom: '10px',
+    color: '#e2e8f0',
     fontSize: '14px',
     fontWeight: '500',
   },
   input: {
-    width: '100%',
-    padding: '12px 16px',
-    border: '1px solid #334155', // Dark border
-    borderRadius: '8px',
-    fontSize: '14px',
-    color: '#f8fafc', // Light text
-    backgroundColor: '#1e293b', // Dark input background
-    transition: 'all 0.2s ease',
+    width: '93%',
+    padding: '14px 16px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '30px',
+    fontSize: '15px',
+    color: '#f8fafc',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    transition: 'all 0.3s ease',
     outline: 'none',
     ':focus': {
-      borderColor: '#3b82f6', // Blue focus
-      boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.2)',
+      borderColor: '#3b82f6',
+      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2)',
     },
   },
   inputError: {
     borderColor: '#ef4444',
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   errorText: {
     display: 'block',
-    marginTop: '6px',
+    marginTop: '8px',
     color: '#ef4444',
-    fontSize: '12px',
+    fontSize: '13px',
+    fontWeight: '500',
   },
   button: {
     width: '100%',
-    padding: '14px',
-    backgroundColor: '#3b82f6', // Blue button
+    padding: '16px',
+    background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '30px',
+    fontSize: '15px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     marginTop: '8px',
+    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+    position: 'relative',
+    overflow: 'hidden',
     ':hover': {
-      backgroundColor: '#2563eb', // Darker blue on hover
+      boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
     },
     ':disabled': {
-      backgroundColor: '#1e40af', // Even darker when disabled
+      background: 'linear-gradient(90deg, #1e40af, #4c1d95)',
       cursor: 'not-allowed',
     },
   },
   secondaryButton: {
     width: '100%',
-    padding: '12px',
+    padding: '14px',
     backgroundColor: 'transparent',
-    color: '#94a3b8', // Light gray text
-    border: '1px solid #334155', // Dark border
-    borderRadius: '8px',
+    color: '#94a3b8',
+    border: '1px solid rgba(148, 163, 184, 0.2)',
+    borderRadius: '30px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     ':hover': {
-      backgroundColor: '#334155', // Slightly lighter on hover
+      backgroundColor: 'rgba(148, 163, 184, 0.1)',
       color: '#e2e8f0',
     },
   },
   footer: {
-    marginTop: '24px',
-    paddingTop: '24px',
-    borderTop: '1px solid #334155', // Dark border
+    marginTop: '28px',
+    paddingTop: '28px',
+    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+  },
+  orb1: {
+    position: 'absolute',
+    width: '300px',
+    height: '300px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 70%)',
+    top: '-100px',
+    left: '-100px',
+    zIndex: 1,
+  },
+  orb2: {
+    position: 'absolute',
+    width: '400px',
+    height: '400px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0) 70%)',
+    bottom: '-150px',
+    right: '-150px',
+    zIndex: 1,
   },
 };
 

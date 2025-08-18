@@ -42,7 +42,7 @@ export const sendBroadcastEmail = async (req, res) => {
 
     <!-- CTA Button (if needed) -->
     <div style="text-align: center; margin: 30px 0;">
-      <a href="https://civicconnect.com" style="background: linear-gradient(to right, #4d9de0, #6bb9f0); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(77,157,224,0.3);">
+      <a href="http://localhost:5173/" style="background: linear-gradient(to right, #4d9de0, #6bb9f0); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(77,157,224,0.3);">
         Visit CivicConnect
       </a>
     </div>
@@ -51,7 +51,7 @@ export const sendBroadcastEmail = async (req, res) => {
     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #333;">
       <h4 style="color: #4d9de0; margin-bottom: 12px; font-size: 16px;">Need help or have questions?</h4>
       <p style="color: #ddd; font-size: 14px; margin: 8px 0;">
-        Contact our support team at <a href="mailto:support@civicconnect.com" style="color: #ff6b35; text-decoration: none;">support@civicconnect.com</a>
+        Contact our support team at <a href="mailto:civicconnectpvt@gmail.com" style="color: #ff6b35; text-decoration: none;">civicconnectpvt@gmail.com</a>
       </p>
     </div>
   </div>
@@ -94,45 +94,38 @@ export const sendBroadcastEmail = async (req, res) => {
 
 export const getDashboardSummary = async (req, res) => {
   try {
-    // Step 1: Find all issues that have feedback and are not yet closed
-    const feedbacks = await Feedback.find().select("issue");
-    const issueIdsWithFeedback = feedbacks.map(f => f.issue);
+    // Step 1: Fetch all issues with citizen details
+    const issues = await Issue.find()
+      .populate('citizen', 'name email phone sector houseId') // optional, include citizen info
+      .sort({ createdAt: -1 }); // latest first
 
-    if (issueIdsWithFeedback.length > 0) {
-      await Issue.updateMany(
-        { _id: { $in: issueIdsWithFeedback }, status: { $ne: "closed_by_sector_head" } },
-        { $set: { status: "closed_by_sector_head" } }
-      );
-    }
+    // Step 2: Count issues by status
+    const statusCounts = issues.reduce((acc, issue) => {
+      const status = issue.status;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
 
-    // Step 2: Fetch updated counts
-    const [
-      totalIssues,
-      openIssues,
-      closedIssues,
-      pendingIssues,
-      totalCitizens,
-      totalFeedbacks
-    ] = await Promise.all([
-      Issue.countDocuments(),
-      Issue.countDocuments({ status: "open" }),
-      Issue.countDocuments({ status: "closed_by_sector_head" }),
-      Issue.countDocuments({ status: "pending" }),
-      Citizen.countDocuments(),
-      Feedback.countDocuments()
-    ]);
+    // Step 3: Count total citizens
+    const totalCitizens = await Citizen.countDocuments();
+
+    // Step 4: Count total feedbacks
+    const totalFeedbacks = await Feedback.countDocuments();
 
     res.status(200).json({
-      totalIssues,
-      openIssues,
-      closedIssues,
-      pendingIssues,
+      totalIssues: issues.length,
+      pendingIssues: statusCounts['Pending'] || 0,
+      inProgressIssues: statusCounts['In Progress'] || 0,
+      resolvedIssues: statusCounts['Resolved'] || 0,
+      escalatedIssues: statusCounts['Escalated'] || 0,
+      closedIssues: statusCounts['Closed'] || 0,
       totalCitizens,
-      totalFeedbacks
+      totalFeedbacks,
+      issues // this is the full array of all issues with citizen info
     });
   } catch (error) {
-    console.error("Error fetching dashboard summary:", error);
-    res.status(500).json({ message: "Failed to fetch dashboard summary" });
+    console.error('Error fetching dashboard summary:', error);
+    res.status(500).json({ message: 'Failed to fetch dashboard summary' });
   }
 };
 

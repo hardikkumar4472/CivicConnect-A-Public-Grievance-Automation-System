@@ -50,7 +50,7 @@ const BroadcastPage = () => {
         }, 2000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Broadcast email Sent successfully');
+      setError(err.response?.data?.message || 'Failed to send broadcast');
       console.error('Broadcast error:', err);
     } finally {
       setLoading(false);
@@ -60,21 +60,29 @@ const BroadcastPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>
-          <i className="fas fa-bullhorn" style={styles.icon}></i> Send Broadcast Message
-        </h2>
+        <div style={styles.header}>
+          <h2 style={styles.title}>
+            <i className="fas fa-bullhorn" style={styles.icon}></i> Send Broadcast Message
+          </h2>
+          <p style={styles.subtitle}>Send important announcements to all citizens in your sector</p>
+        </div>
         
         {success ? (
           <div style={styles.successMessage}>
-            <i className="fas fa-check-circle" style={styles.successIcon}></i>
-            <p>Broadcast sent successfully!</p>
-            <p>Redirecting to dashboard...</p>
+            <div style={styles.successContent}>
+              <i className="fas fa-check-circle" style={styles.successIcon}></i>
+              <h3 style={styles.successTitle}>Broadcast Sent Successfully!</h3>
+              <p style={styles.successText}>Your message has been delivered to all citizens.</p>
+              <div style={styles.loadingBar}>
+                <div style={styles.loadingProgress}></div>
+              </div>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={styles.form}>
             <div style={styles.formGroup}>
               <label htmlFor="subject" style={styles.label}>
-                Subject
+                Subject <span style={styles.required}>*</span>
               </label>
               <input
                 type="text"
@@ -85,12 +93,16 @@ const BroadcastPage = () => {
                 required
                 style={styles.input}
                 placeholder="Enter message subject"
+                maxLength="100"
               />
+              <div style={styles.charCount}>
+                {formData.subject.length}/100 characters
+              </div>
             </div>
             
             <div style={styles.formGroup}>
               <label htmlFor="message" style={styles.label}>
-                Message
+                Message <span style={styles.required}>*</span>
               </label>
               <textarea
                 id="message"
@@ -101,12 +113,17 @@ const BroadcastPage = () => {
                 style={styles.textarea}
                 placeholder="Type your broadcast message here..."
                 rows="6"
+                maxLength="1000"
               />
+              <div style={styles.charCount}>
+                {formData.message.length}/1000 characters
+              </div>
             </div>
             
             {error && (
               <div style={styles.errorMessage}>
-                <i className="fas fa-exclamation-circle"></i> {error}
+                <i className="fas fa-exclamation-circle" style={styles.errorIcon}></i> 
+                <span>{error}</span>
               </div>
             )}
             
@@ -117,11 +134,11 @@ const BroadcastPage = () => {
                 style={styles.cancelButton}
                 disabled={loading}
               >
-                Cancel
+                <i className="fas fa-times"></i> Cancel
               </button>
               <button
                 type="submit"
-                style={styles.submitButton}
+                style={loading ? styles.submitButtonDisabled : styles.submitButton}
                 disabled={loading}
               >
                 {loading ? (
@@ -141,15 +158,53 @@ const BroadcastPage = () => {
 
       {/* Inline CSS for full page styling */}
       <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes progressBar {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+        
         body, html {
           margin: 0;
           padding: 0;
           width: 100%;
           height: 100%;
           overflow-x: hidden;
+          font-family: 'Poppins', sans-serif;
         }
+        
         #root {
           height: 100%;
+        }
+        
+        /* Input focus effects */
+        input:focus, textarea:focus {
+          border-color: #64ffda !important;
+          box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.3) !important;
+        }
+        
+        /* Button hover effects */
+        button:not(:disabled):hover {
+          transform: translateY(-2px) !important;
+        }
+        
+        button:not(:disabled):active {
+          transform: translateY(0) !important;
+        }
+        
+        /* Card animation */
+        .broadcast-card {
+          animation: fadeIn 0.6s ease-out;
         }
       `}</style>
     </div>
@@ -168,66 +223,113 @@ const styles = {
     fontFamily: "'Poppins', sans-serif",
     margin: 0,
     boxSizing: 'border-box',
+    background: 'linear-gradient(135deg, #0a192f 0%, #0f2746 100%)',
   },
   card: {
-    backgroundColor: '#112240',
-    borderRadius: '10px',
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
-    padding: '30px',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    border: '3px solid #233554',
+    borderRadius: '16px',
+    boxShadow: '0 0px 10px rgba(238, 238, 238, 0.4)',
+    padding: '40px',
     width: '100%',
     maxWidth: '700px',
-    color: '#ccd6f6',
+    color: '#ccd6f606',
     margin: '0 auto',
+    animation: 'fadeIn 0.6s ease-out',
+    backdropFilter: 'blur(30px)',
+    transition: 'all 0.3s ease',
+    ':hover': {
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+      transform: 'translateY(-5px)'
+    }
+  },
+  header: {
+    marginBottom: '30px',
+    textAlign: 'center'
   },
   title: {
     color: '#64ffda',
-    marginBottom: '30px',
+    margin: '0 0 10px 0',
+    fontSize: '1.8rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    justifyContent: 'center',
+    gap: '12px',
+    textShadow: '0 0 10px rgba(100, 255, 218, 0.3)'
+  },
+  subtitle: {
+    color: '#8892b0',
+    margin: 0,
+    fontSize: '0.95rem',
+    opacity: 0.8
   },
   icon: {
-    fontSize: '1.5rem',
+    fontSize: '1.8rem',
+    animation: 'pulse 2s infinite'
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '25px',
   },
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '10px',
+    position: 'relative'
   },
   label: {
     color: '#8892b0',
-    fontSize: '0.9rem',
+    fontSize: '0.95rem',
     fontWeight: '500',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px'
+  },
+  required: {
+    color: '#ff6b6b',
+    fontSize: '1.2rem'
   },
   input: {
-    padding: '12px 15px',
-    borderRadius: '5px',
-    border: '1px solid #1e2a47',
-    backgroundColor: '#0a192f',
+    padding: '14px 20px',
+    borderRadius: '30px',
+    border: '1px solid #233554',
+    backgroundColor: 'rgba(10, 25, 47, 0.7)',
     color: '#e6f1ff',
     fontSize: '1rem',
     outline: 'none',
     transition: 'all 0.3s ease',
     width: '100%',
     boxSizing: 'border-box',
+    ':focus': {
+      borderColor: '#64ffda',
+      boxShadow: '0 0 0 2px rgba(100, 255, 218, 0.3)'
+    }
   },
   textarea: {
-    padding: '12px 15px',
-    borderRadius: '5px',
-    border: '1px solid #1e2a47',
-    backgroundColor: '#0a192f',
+    padding: '14px 20px',
+    borderRadius: '30px',
+    border: '1px solid #233554',
+    backgroundColor: 'rgba(10, 25, 47, 0.7)',
     color: '#e6f1ff',
     fontSize: '1rem',
     outline: 'none',
     transition: 'all 0.3s ease',
     resize: 'vertical',
+    minHeight: '150px',
     width: '100%',
     boxSizing: 'border-box',
+    lineHeight: '1.6',
+    ':focus': {
+      borderColor: '#64ffda',
+      boxShadow: '0 0 0 2px rgba(100, 255, 218, 0.3)'
+    }
+  },
+  charCount: {
+    color: '#8892b0',
+    fontSize: '0.8rem',
+    textAlign: 'right',
+    marginTop: '5px'
   },
   buttonGroup: {
     display: 'flex',
@@ -236,50 +338,126 @@ const styles = {
     marginTop: '20px',
   },
   cancelButton: {
-    padding: '12px 25px',
+    padding: '14px 25px',
     backgroundColor: 'transparent',
     color: '#ff6b6b',
     border: '1px solid #ff6b6b',
-    borderRadius: '5px',
+    borderRadius: '30px',
     cursor: 'pointer',
-    fontSize: '0.9rem',
+    fontSize: '0.95rem',
     transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontWeight: '600',
+    ':hover:not(:disabled)': {
+      backgroundColor: 'rgba(255, 107, 107, 0.1)',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 5px 15px rgba(255, 107, 107, 0.2)'
+    },
+    ':disabled': {
+      opacity: 0.6,
+      cursor: 'not-allowed'
+    }
   },
   submitButton: {
-    padding: '12px 25px',
+    padding: '14px 25px',
+    background: 'linear-gradient(135deg, #1e2a47 0%, #233554 100%)',
+    color: '#64ffda',
+    border: 'none',
+    borderRadius: '30px',
+    cursor: 'pointer',
+    fontSize: '0.95rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontWeight: '600',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 15px rgba(30, 42, 71, 0.4)',
+    ':hover:not(:disabled)': {
+      background: 'linear-gradient(135deg, #233554 0%, #1e2a47 100%)',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 8px 20px rgba(30, 42, 71, 0.6)'
+    },
+    ':disabled': {
+      cursor: 'not-allowed'
+    }
+  },
+  submitButtonDisabled: {
+    padding: '14px 25px',
     backgroundColor: '#1e2a47',
     color: '#64ffda',
     border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
+    borderRadius: '12px',
+    cursor: 'not-allowed',
+    fontSize: '0.95rem',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    transition: 'all 0.3s ease',
+    fontWeight: '600',
+    opacity: 0.7
   },
   errorMessage: {
-    backgroundColor: 'rgba(0, 58, 96, 0.65)',
-    color: '#19bf00ff',
-    padding: '12px 15px',
-    borderRadius: '5px',
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    color: '#ff6b6b',
+    padding: '14px 20px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '10px',
     fontSize: '0.9rem',
+    border: '1px solid rgba(255, 107, 107, 0.3)',
+    animation: 'fadeIn 0.3s ease-out'
+  },
+  errorIcon: {
+    fontSize: '1.2rem'
   },
   successMessage: {
     backgroundColor: 'rgba(100, 255, 218, 0.1)',
     color: '#64ffda',
-    padding: '20px',
-    borderRadius: '5px',
+    padding: '30px',
+    borderRadius: '12px',
     textAlign: 'center',
     fontSize: '1rem',
+    border: '1px solid rgba(100, 255, 218, 0.3)',
+    animation: 'fadeIn 0.5s ease-out'
+  },
+  successContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '15px'
   },
   successIcon: {
-    fontSize: '2.5rem',
-    marginBottom: '15px',
+    fontSize: '3.5rem',
+    color: '#64ffda',
+    filter: 'drop-shadow(0 0 10px rgba(100, 255, 218, 0.5))'
   },
+  successTitle: {
+    margin: 0,
+    fontSize: '1.5rem',
+    color: '#64ffda'
+  },
+  successText: {
+    margin: 0,
+    color: '#8892b0',
+    fontSize: '1rem'
+  },
+  loadingBar: {
+    width: '100%',
+    height: '4px',
+    backgroundColor: 'rgba(100, 255, 218, 0.2)',
+    borderRadius: '2px',
+    marginTop: '20px',
+    overflow: 'hidden'
+  },
+  loadingProgress: {
+    height: '100%',
+    width: '0%',
+    backgroundColor: '#64ffda',
+    borderRadius: '2px',
+    animation: 'progressBar 2s linear forwards'
+  }
 };
 
 export default BroadcastPage;

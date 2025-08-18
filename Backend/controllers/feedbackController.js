@@ -8,26 +8,21 @@ export const submitFeedback = async (req, res) => {
     // Check if the issue belongs to the citizen
     const issue = await Issue.findById(issueId);
     if (!issue || issue.citizen.toString() !== citizenId.toString()) {
-      return res.status(403).json({ message: 'Unauthorized to give feedback on this issue' });
+      return res.status(403).json({ message: "Not authorized to give feedback" });
     }
 
-    const existing = await Feedback.findOne({ citizen: citizenId, issue: issueId });
-    if (existing) {
-      return res.status(400).json({ message: 'Feedback already submitted for this issue' });
-    }
-    const newFeedback = new Feedback({
-      citizen: citizenId,
-      issue: issueId,
-      rating,
-      comment
-    });
-    await newFeedback.save();
-    res.status(201).json({ message: 'Feedback submitted successfully', feedback: newFeedback });
-  } catch (err) {
-    console.error('Error submitting feedback:', err);
-    res.status(500).json({ message: 'Server error while submitting feedback' });
+    // Save feedback
+    const feedback = new Feedback({ issue: issueId, citizen: citizenId, rating, comment });
+    await feedback.save();
+    await Issue.findByIdAndDelete(issueId);
+
+    res.status(201).json({ message: "Feedback submitted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 export const getSectorWiseRatings = async (req, res) => {
   try {
     const ratings = await Feedback.aggregate([
