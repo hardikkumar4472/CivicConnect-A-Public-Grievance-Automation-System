@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 function Home() {
   const [selectedRole, setSelectedRole] = useState("citizen");
   const [loading, setLoading] = useState(true);
@@ -55,7 +55,7 @@ function Home() {
     }));
 
     try {
-      const url = `http://localhost:5000${endpoint}`;
+      const url = `${API_URL}${endpoint}`;
       const res = await axios.post(url, {
         email: loginData[role].email,
         password: loginData[role].password
