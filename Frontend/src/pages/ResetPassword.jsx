@@ -61,7 +61,7 @@ const ResetPassword = () => {
     
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/citizen/reset-password/${token}`,
+        `https://civicconnect-1f9p.onrender.com/api/citizen/reset-password/${token}`,
         { password: formData.password }
       );
       
@@ -122,7 +122,7 @@ const ResetPassword = () => {
             <p style={styles.subtitle}>The password reset link is invalid or has expired</p>
           </div>
           <motion.button 
-            onClick={() => navigate('/forgot-password')} 
+            onClick={() => navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/forgot-password')} 
             style={styles.button}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -246,7 +246,7 @@ const ResetPassword = () => {
           style={styles.footer}
         >
           <motion.button 
-            onClick={() => navigate('/')} 
+            onClick={() => navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/')} 
             style={styles.secondaryButton}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
