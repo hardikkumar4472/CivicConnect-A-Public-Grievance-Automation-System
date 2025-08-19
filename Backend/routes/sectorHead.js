@@ -21,16 +21,16 @@ const isAdmin = async (req, res, next) => {
   }
 };
 // router.get('/citizen/:id', authSectorHead, getCitizenDetails);
-router.get('/dashboard-summary', authSectorHead, getSectorDashboardSummary);
-router.post('/register', protect, isAdmin, registerSectorHead);
-router.post('/login', loginSectorHead);
-router.post('/forgot-password', forgotPasswordSectorHead);
-router.post('/reset-password/:token', resetPasswordSectorHead);
-router.get('/issues', protect, authSectorHead, getAllIssuesInSector);
-router.get('/analytics', protect, authSectorHead, getSectorAnalytics);
-router.get("/me", authSectorHead, getSectorHeadDetails);
-router.post('/broadcast', authSectorHead, sendBroadcastEmailSectorHead);
-router.get('/sector-citizens', authSectorHead, getCitizensWithIssuesBySector);
-router.get('/average-rating', authSectorHead, getSectorWiseRatings);
+router.get('https://civicconnect-1f9p.onrender.com/dashboard-summary', authSectorHead, getSectorDashboardSummary);
+router.post('https://civicconnect-1f9p.onrender.com/register', protect, isAdmin, registerSectorHead);
+router.post('https://civicconnect-1f9p.onrender.com/login', loginSectorHead);
+router.post('https://civicconnect-1f9p.onrender.com/forgot-password', forgotPasswordSectorHead);
+router.post('https://civicconnect-1f9p.onrender.com/reset-password/:token', resetPasswordSectorHead);
+router.get('https://civicconnect-1f9p.onrender.com/issues', protect, authSectorHead, getAllIssuesInSector);
+router.get('https://civicconnect-1f9p.onrender.com/analytics', protect, authSectorHead, getSectorAnalytics);
+router.get("https://civicconnect-1f9p.onrender.com/me", authSectorHead, getSectorHeadDetails);
+router.post('https://civicconnect-1f9p.onrender.com/broadcast', authSectorHead, sendBroadcastEmailSectorHead);
+router.get('https://civicconnect-1f9p.onrender.com/sector-citizens', authSectorHead, getCitizensWithIssuesBySector);
+router.get('https://civicconnect-1f9p.onrender.com/average-rating', authSectorHead, getSectorWiseRatings);
 
 export default router;
