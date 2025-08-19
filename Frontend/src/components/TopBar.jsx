@@ -7,7 +7,7 @@ function TopBar() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/");
+    navigate("https://civicconnect-a-public-grievance-85gb.onrender.com/");
   };
 
   return (
