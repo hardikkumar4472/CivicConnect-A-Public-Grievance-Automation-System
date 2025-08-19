@@ -59,18 +59,18 @@ export default function SectorHeadDashboard() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/sectorHead-login");
+          navigate("https://civicconnect-a-public-grievance-85gb.onrender.com/sectorHead-dashboard");
           return;
         }
         
         const [sectorRes, issuesRes, summaryRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/sector-head/me", {
+          axios.get("https://civicconnect-1f9p.onrender.com/api/sector-head/me", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:5000/api/sector-head/issues", {
+          axios.get("https://civicconnect-1f9p.onrender.com/api/sector-head/issues", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:5000/api/sector-head/dashboard-summary", {
+          axios.get("https://civicconnect-1f9p.onrender.com/api/sector-head/dashboard-summary", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -84,7 +84,7 @@ export default function SectorHeadDashboard() {
         console.error("Error fetching data:", error);
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
-          navigate("/sectorHead-login");
+          navigate("https://civicconnect-a-public-grievance-85gb.onrender.com/sectorHead-login");
         }
       } finally {
         setLoading(false);
@@ -113,7 +113,7 @@ export default function SectorHeadDashboard() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "http://localhost:5000/api/sector-head/analytics",
+        "https://civicconnect-1f9p.onrender.com/api/sector-head/analytics",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAnalytics(response.data);
@@ -134,7 +134,7 @@ export default function SectorHeadDashboard() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:5000/api/sector-head/citizen/${issue.raisedBy}`,
+        `https://civicconnect-1f9p.onrender.com/api/sector-head/citizen/${issue.raisedBy}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -164,7 +164,7 @@ export default function SectorHeadDashboard() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:5000/api/issues/${issueId}/status`,
+        `https://civicconnect-1f9p.onrender.com/api/issues/${issueId}/status`,
         { status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -313,7 +313,7 @@ export default function SectorHeadDashboard() {
           </button>
 
           <button 
-            onClick={() => navigate('/send-broadcast')}
+            onClick={() => navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/send-broadcast')}
             style={{
               padding: '10px 15px',
               backgroundColor: '#112240',
@@ -408,7 +408,7 @@ export default function SectorHeadDashboard() {
           <button 
             onClick={() => {
               localStorage.removeItem("token");
-              navigate("/");
+              navigate("https://civicconnect-a-public-grievance-85gb.onrender.com");
             }}
             style={{
               padding: '10px 15px',
