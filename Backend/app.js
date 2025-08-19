@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "https://civicconnect-a-public-grievance-85gb.onrender.com/", 
+  origin: "https://civicconnect-a-public-grievance-85gb.onrender.com", 
   credentials: true
 }));
 
