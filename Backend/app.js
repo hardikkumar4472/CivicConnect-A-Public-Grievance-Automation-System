@@ -16,16 +16,16 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173", 
+  origin: "https://civicconnect-a-public-grievance-85gb.onrender.com/", 
   credentials: true
 }));
 
 // routes
-app.use('/api/auth', authRoutes);
-app.use('/api/sector-head', sectorHeadRoutes);
-app.use('/api/citizen', citizenRoutes);
-app.use('/api/issues', issueRoutes);
-app.use('/api/feedback', feedbackRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/auth', authRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/sector-head', sectorHeadRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/citizen', citizenRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/issues', issueRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/feedback', feedbackRoutes);
+app.use('https://civicconnect-1f9p.onrender.com/api/admin', adminRoutes);
 
 export default app;
