@@ -55,7 +55,7 @@ function Home() {
     }));
 
     try {
-      const url = `${API_URL}${endpoint}`;
+      const url = `https://civicconnect-1f9p.onrender.com/${endpoint}`;
       const res = await axios.post(url, {
         email: loginData[role].email,
         password: loginData[role].password
@@ -65,7 +65,7 @@ function Home() {
       localStorage.setItem("role", role);
       localStorage.setItem("name", res.data[role]?.name || "");
 
-      navigate(`/${role}-dashboard`);
+      navigate(`https://civicconnect-1f9p.onrender.com/${role}-dashboard`);
     } catch (err) {
       const errorMsg = err.response?.data?.message || `Login failed for ${role.charAt(0).toUpperCase() + role.slice(1)}`;
       setLoginData(prev => ({ 
@@ -323,7 +323,7 @@ function Home() {
         {/* Footer */}
         <footer style={styles.footer}>
           <div style={styles.loginFooter}>
-            <Link to="/forgot-password" style={styles.forgotPassword}>Forgot Password?</Link>
+            <Link to="https://civicconnect-a-public-grievance-85gb.onrender.com/forgot-password" style={styles.forgotPassword}>Forgot Password?</Link>
             <div style={styles.secureLogin}>
               <i className="fas fa-shield-alt" style={styles.shieldIcon}></i> Secure Municipal Portal
             </div>
