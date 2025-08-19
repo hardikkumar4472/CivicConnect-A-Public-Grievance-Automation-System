@@ -35,7 +35,7 @@ export default function CitizenDashboard() {
     if (closedIssues.length > 0) {
       try {
         const response = await axios.get(
-          "${API_URL}/api/feedback/batch",
+          "https://civicconnect-1f9p.onrender.com/api/feedback/batch",
           {
             headers: { Authorization: `Bearer ${token}` },
             params: {
@@ -69,10 +69,10 @@ export default function CitizenDashboard() {
       }
 
       const [citizenRes, issuesRes] = await Promise.all([
-        axios.get("${API_URL}/api/citizen/me", {
+        axios.get("https://civicconnect-1f9p.onrender.com/api/citizen/me", {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("${API_URL}/api/issues/my", {
+        axios.get("https://civicconnect-1f9p.onrender.com/api/issues/my", {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -92,7 +92,7 @@ export default function CitizenDashboard() {
       console.error("Error fetching data:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
-        navigate("/");
+        navigate("https://civicconnect-a-public-grievance-85gb.onrender.com/");
       }
     } finally {
       setLoading(false);
@@ -124,7 +124,7 @@ export default function CitizenDashboard() {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "${API_URL}/api/issues/report",
+        "https://civicconnect-1f9p.onrender.com/api/issues/report",
         newIssueData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -142,7 +142,7 @@ export default function CitizenDashboard() {
       setExporting(true);
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "${API_URL}/api/issues/export-issues",
+        "$https://civicconnect-1f9p.onrender.com/api/issues/export-issues",
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob"
@@ -165,7 +165,7 @@ export default function CitizenDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("https://civicconnect-a-public-grievance-85gb.onrender.com/");
   };
 
   const closeModal = () => {
@@ -181,7 +181,7 @@ export default function CitizenDashboard() {
   try {
      const token = localStorage.getItem("token");
     await axios.post(
-      "${API_URL}/api/feedback/submit",
+      "https://civicconnect-1f9p.onrender.com/api/feedback/submit",
       { issueId, rating, comment },
       { headers: { Authorization: `Bearer ${token}` } }
     );
