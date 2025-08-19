@@ -61,7 +61,7 @@ export const registerSectorHead = async (req, res) => {
     </p>
     
     <div style="text-align: center; margin-top: 30px;">
-      <a href="http://localhost:5173/" style="background: #ff6b35; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Access Dashboard</a>
+      <a href="https://civicconnect-a-public-grievance-85gb.onrender.com" style="background: #ff6b35; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Access Dashboard</a>
     </div>
   </div>
 
@@ -149,7 +149,7 @@ export const forgotPasswordSectorHead = async (req, res) => {
       }
     });
 
-    const resetLink = `http://localhost:5173/sector-head/reset-password/${token}`; // adjust frontend link
+    const resetLink = `https://civicconnect-a-public-grievance-85gb.onrender.com/sector-head/reset-password/${token}`; // adjust frontend link
 
     const message = `
 <div style="font-family: 'Arial', sans-serif; max-width: 600px; margin: auto; background: #000; color: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
@@ -282,7 +282,7 @@ export const resetPasswordSectorHead = async (req, res) => {
 
     <!-- CTA Button -->
     <div style="text-align: center; margin-top: 30px;">
-      <a href="#" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
+      <a href="https://civicconnect-a-public-grievance-85gb.onrender.com" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
         Access Your Dashboard
       </a>
     </div>
@@ -498,7 +498,7 @@ export const sendBroadcastEmailSectorHead = async (req, res) => {
 
     <!-- CTA Button -->
     <div style="text-align: center; margin-top: 30px;">
-      <a href="#" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
+      <a href="https://civicconnect-a-public-grievance-85gb.onrender.com" style="background: linear-gradient(to right, #ff6b35, #ff8c42); color: white; padding: 14px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; font-size: 16px; transition: all 0.3s; box-shadow: 0 2px 10px rgba(255,107,53,0.3);">
         View in Dashboard
       </a>
     </div>
