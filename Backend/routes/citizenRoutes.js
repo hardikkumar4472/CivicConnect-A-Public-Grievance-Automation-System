@@ -7,10 +7,10 @@ import authCitizen from '../middleware/authCitizen.js';
 
 const router = express.Router();
 
-router.post('https://civicconnect-1f9p.onrender.com/register', authSectorHead, registerCitizen);
-router.post('https://civicconnect-1f9p.onrender.com/login', loginCitizen);
-router.post('https://civicconnect-1f9p.onrender.com/forgot-password', forgotPasswordCitizen);
-router.post('https://civicconnect-1f9p.onrender.com/reset-password/:token', resetPasswordCitizen);
-router.get('https://civicconnect-1f9p.onrender.com/me', authCitizen, getCitizenProfile); 
+router.post('/register', authSectorHead, registerCitizen);
+router.post('/login', loginCitizen);
+router.post('/forgot-password', forgotPasswordCitizen);
+router.post('/reset-password/:token', resetPasswordCitizen);
+router.get('/me', authCitizen, getCitizenProfile); 
 
 export default router;
