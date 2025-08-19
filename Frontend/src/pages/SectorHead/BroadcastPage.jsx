@@ -33,7 +33,7 @@ const BroadcastPage = () => {
       }
 
       const response = await axios.post(
-        'http://localhost:5000/api/sector-head/broadcast',
+        `${API_URL}/api/sector-head/broadcast`,
         formData,
         {
           headers: {
