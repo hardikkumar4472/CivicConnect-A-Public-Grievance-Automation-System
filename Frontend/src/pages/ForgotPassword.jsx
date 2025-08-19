@@ -33,7 +33,7 @@ const ForgotPassword = () => {
     
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/citizen/forgot-password', 
+        'https://civicconnect-1f9p.onrender.com/api/citizen/forgot-password', 
         { email }
       );
       
@@ -48,7 +48,7 @@ const ForgotPassword = () => {
         });
 
         setTimeout(() => {
-          navigate('/');
+          navigate('https://civicconnect-1f9p.onrender.com');
         }, 3000);
       } else {
         alert(response.data.message || 'Failed to send reset link');
