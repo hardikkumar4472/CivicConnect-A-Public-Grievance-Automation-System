@@ -44,7 +44,8 @@
 // //     </div>
 // //   );
 // // }
-
+const API_URL = import.meta.env.VITE_API_URL;
+const VITE_URL = import.meta.env.VITE_VITE_URL;
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/Home";
@@ -60,12 +61,12 @@ const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" />;
 };
-const CitizenPrivateRoute = ({ children }) => {
+const CitizenPrivateRoute = ({ children }) => {4
   const token = localStorage.getItem("citizenToken"); // Assuming you use 'citizenToken' for citizens
   return token ? children : <Navigate to="/" />;
 };
-
-
+export const getBaseURL = (endpoint = "") =>
+  endpoint.includes("api") ? API_URL : VITE_URL;
 
 export default function App() {
   return (
