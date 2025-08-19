@@ -28,12 +28,12 @@ const BroadcastPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        navigate('/sectorHead-login');
+        navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/sectorHead-login');
         return;
       }
 
       const response = await axios.post(
-        `${API_URL}/api/sector-head/broadcast`,
+        'https://civicconnect-a-public-grievance-85gb.onrender.com/api/sector-head/broadcast',
         formData,
         {
           headers: {
@@ -130,7 +130,7 @@ const BroadcastPage = () => {
             <div style={styles.buttonGroup}>
               <button
                 type="button"
-                onClick={() => navigate('/sectorHead-dashboard')}
+                onClick={() => navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/sectorHead-dashboard')}
                 style={styles.cancelButton}
                 disabled={loading}
               >
