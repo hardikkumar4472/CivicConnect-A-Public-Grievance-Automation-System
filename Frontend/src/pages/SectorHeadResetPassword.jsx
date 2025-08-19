@@ -27,7 +27,7 @@ const SectorHeadResetPassword = () => {
     
     try {
       await axios.post(
-        `http://localhost:5000/api/sector-head/reset-password/${token}`,
+        `${API_URL}/api/sector-head/reset-password/${token}`,
         { password }
       );
       
