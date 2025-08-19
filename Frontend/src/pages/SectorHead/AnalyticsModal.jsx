@@ -13,7 +13,7 @@ const AnalyticsModal = ({ analytics: initialAnalytics, onClose }) => {
         // Fetch average rating
         setLoadingRating(true);
         const ratingResponse = await fetch(
-          `${API_URL}/api/sector-head/average-rating`,
+          `$https://civicconnect-a-public-grievance-85gb.onrender.com/api/sector-head/average-rating`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -37,7 +37,7 @@ const AnalyticsModal = ({ analytics: initialAnalytics, onClose }) => {
         // Fetch total issues
         setLoadingTotalIssues(true);
         const analyticsResponse = await fetch(
-          "${API_URL}/api/sector-head/analytics",
+          "$https://civicconnect-a-public-grievance-85gb.onrender.com/api/sector-head/analytics",
           {
             headers: {
               Authorization: `Bearer ${token}`
