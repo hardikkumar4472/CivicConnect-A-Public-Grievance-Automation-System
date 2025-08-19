@@ -21,11 +21,11 @@ app.use(cors({
 }));
 
 // routes
-app.use('https://civicconnect-1f9p.onrender.com/api/auth', authRoutes);
-app.use('https://civicconnect-1f9p.onrender.com/api/sector-head', sectorHeadRoutes);
-app.use('https://civicconnect-1f9p.onrender.com/api/citizen', citizenRoutes);
-app.use('https://civicconnect-1f9p.onrender.com/api/issues', issueRoutes);
-app.use('https://civicconnect-1f9p.onrender.com/api/feedback', feedbackRoutes);
-app.use('https://civicconnect-1f9p.onrender.com/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/sector-head', sectorHeadRoutes);
+app.use('/api/citizen', citizenRoutes);
+app.use('/api/issues', issueRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/admin', adminRoutes);
 
 export default app;
