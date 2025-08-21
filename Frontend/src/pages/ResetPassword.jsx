@@ -122,7 +122,7 @@ const ResetPassword = () => {
             <p style={styles.subtitle}>The password reset link is invalid or has expired</p>
           </div>
           <motion.button 
-            onClick={() => navigate('https://civicconnect-a-public-grievance-85gb.onrender.com/forgot-password')} 
+            window.location.href = "https://civicconnect-a-public-grievance-85gb.onrender.com/";
             style={styles.button}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
